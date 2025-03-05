@@ -41,12 +41,15 @@ limits and a subsequent include of str2num.c .
 
 The implementations uses the zlib license for allowing the integration in
 nearly all compilers and professional software.
+The little test and benchmark script bench_str2num.c uses the more limiting
+"Civil Usage Public License" however.
+
 
 Please leave a star once you like this project and have a look at my time API
 functions in https://github.com/klux21/limitless_times which provides truly fast,
 portable and an easy to use time and timezone handling functions and at my
 portable printf family wrappers in https://github.com/klux21/callback_printf
-as well. 
+as well.
 
 Kind regards,
 
