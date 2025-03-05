@@ -255,6 +255,7 @@ int run_tests()
       goto Exit;
    }
 
+   iret = 1;
    Exit:;
    return (iret);
 } /* run_tests() */
