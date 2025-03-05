@@ -175,84 +175,111 @@ int run_tests()
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
-      nl = str2l(ps + (i&3), NULL, 0);
+      nl = str2l(ps + (i&7), NULL, 0);
    t1 = TimeStamp() - t0;
    fprintf(stdout, "An average _____ str2l() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
-      ol = strtol(ps + (i&3), NULL, 0);
+      ol = strtol(ps + (i&7), NULL, 0);
    t1 = TimeStamp() - t0;
    fprintf(stdout, "An average ____ strtol() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
-   if (ol != nl)
+   i  = 10000;
+   while (i--)
    {
-      fprintf(stderr, "Return values of strtol() and str2l() differ! (%ld != %ld)", ol, nl);
-      goto Exit;
+      nl = str2l(ps + (i&7), NULL, 2 + (i & 0x1f));
+      ol = strtol(ps + (i&7), NULL, 2 + (i & 0x1f));
+
+      if (ol != nl)
+      {
+         fprintf(stderr, "Return values of strtol() and str2l() differ! (%ld != %ld)", ol, nl);
+         goto Exit;
+      }
    }
 
    ps = "-12345678901234567890";
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
-      nll = str2ll(ps + (i&3), NULL, 0);
+      nll = str2ll(ps + (i&15), NULL, 0);
    t1 = TimeStamp() - t0;
    fprintf(stdout, "An average ____ str2ll() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
-      oll = strtoll(ps + (i&3), NULL, 0);
+      oll = strtoll(ps + (i&15), NULL, 0);
    t1 = TimeStamp() - t0;
    fprintf(stdout, "An average ___ strtoll() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
-   if (oll != nll)
+   i  = 10000;
+   while (i--)
    {
-      fprintf(stderr, "Return values of strtoll() and str2ll() differ! (%lld != %lld)\n", oll, nll);
-      goto Exit;
+      nll = str2ll(ps + (i&15), NULL, 2 + (i & 0x1f));
+      oll = strtoll(ps + (i&15), NULL, 2 + (i & 0x1f));
+
+      if (oll != nll)
+      {
+         fprintf(stderr, "Return values of strtoll() and str2ll() differ! (%lld != %lld)\n", oll, nll);
+         goto Exit;
+      }
    }
 
    ps = "1234567890";
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
-      nlu = str2ul(ps + (i&3), NULL, 0);
+      nlu = str2ul(ps + (i&7), NULL, 0);
    t1 = TimeStamp() - t0;
    fprintf(stdout, "An average ____ str2ul() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
-      olu = strtoul(ps + (i&3), NULL, 0);
+      olu = strtoul(ps + (i&7), NULL, 0);
    t1 = TimeStamp() - t0;
    fprintf(stdout, "An average ___ strtoul() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
-   if (olu != nlu)
+   i  = 10000;
+   while (i--)
    {
-      fprintf(stdout, "Return values of strtoul() and str2ul() differ! (%lu != %lu)\n", olu, nlu);
-      goto Exit;
+      nlu = str2ul(ps + (i&7), NULL, 2 + (i & 0x1f));
+      olu = strtoul(ps + (i&7), NULL, 2 + (i & 0x1f));
+      if (olu != nlu)
+      {
+         fprintf(stdout, "Return values of strtoul() and str2ul() differ! (%lu != %lu)\n", olu, nlu);
+         goto Exit;
+      }
    }
 
    ps = "12345678901234567890";
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
-      nllu = str2ull(ps + (i&3), NULL, 0);
+      nllu = str2ull(ps + (i&15), NULL, 0);
    t1 = TimeStamp() - t0;
    fprintf(stdout, "An average ___ str2ull() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
-      ollu = strtoull(ps + (i&3), NULL, 0);
+      ollu = strtoull(ps + (i&15), NULL, 0);
    t1 = TimeStamp() - t0;
    fprintf(stdout, "An average __ strtoull() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
-   if (ollu != nllu)
+   i  = 10000;
+   while (i--)
    {
-      fprintf(stderr, "Return values of strtoull() and str2ull() differ! (%llu != %llu)\n", ollu, nllu);
-      goto Exit;
+      nllu = str2ull(ps + (i&15), NULL, 2 + (i & 0x1f));
+      ollu = strtoull(ps + (i&15), NULL, 2 + (i & 0x1f));
+
+      if (ollu != nllu)
+      {
+         fprintf(stderr, "Return values of strtoull() and str2ull() differ! (%llu != %llu)\n", ollu, nllu);
+         goto Exit;
+      }
    }
 
    iret = 1;
