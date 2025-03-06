@@ -172,7 +172,7 @@ int run_tests()
    unsigned long long nllu;
    char * pe;
    char * pr;
-   const char * ps = " -2134567890   ";
+   const char * ps = " -2134567890-2 ";
 
    i  = 1000000;
    t0 = TimeStamp();
@@ -243,7 +243,7 @@ int run_tests()
       }
    }
 
-   ps = " -1234567890   ";
+   ps = " 1234567890 -2 ";
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
@@ -300,8 +300,8 @@ int run_tests()
 
       if (ollu != nllu)
       {
-         ps += ((i+(i>>4))&31);
-         fprintf(stderr, "Return values of strtoull() and str2ull() differ for base %d! (%lld != %lld, '%s')\n", (int)(2 + (i & 0x1f)), ollu, nllu, ps);
+         fprintf(stderr, "Return values of strtoull() and str2ull() differ for base %d! (%lld != %lld, '%s')\n",
+                 (int)(2 + (i & 0x1f)), ollu, nllu, ps + ((i+(i>>4))&31));
          goto Exit;
       }
       if(pe != pr)
