@@ -157,6 +157,7 @@ UT UFN(r_str2) (const char * ps, char ** pe, int base, int * perr)
    static const UT max_base[] = {0, 0, U_MAX/2,  U_MAX/3,  U_MAX/4,  U_MAX/5,  U_MAX/6,  U_MAX/7,  U_MAX/8,  U_MAX/9,  U_MAX/10, U_MAX/11, U_MAX/12, U_MAX/13,
                                        U_MAX/14, U_MAX/15, U_MAX/16, U_MAX/17, U_MAX/18, U_MAX/19, U_MAX/20, U_MAX/21, U_MAX/22, U_MAX/23, U_MAX/24, U_MAX/25,
                                        U_MAX/26, U_MAX/27, U_MAX/28, U_MAX/29, U_MAX/30, U_MAX/31, U_MAX/32, U_MAX/33, U_MAX/34, U_MAX/35, U_MAX/36};
+   const char * psrc = ps;
    UT max;
    UT d;
    int sign = 0;
@@ -222,6 +223,7 @@ UT UFN(r_str2) (const char * ps, char ** pe, int base, int * perr)
 
    if((base < 2) || (base > 36))
    {
+      ps  = psrc;
       err = EINVAL;
       goto Exit;
    }
@@ -231,6 +233,7 @@ UT UFN(r_str2) (const char * ps, char ** pe, int base, int * perr)
    d = digit_value[(uint8_t) *ps];
    if(d >= (uint8_t) base)
    {
+      ps  = psrc;
       err = EINVAL;
       goto Exit;
    }
@@ -319,6 +322,7 @@ ST SFN(r_str2)(const char * ps, char ** pe, int base, int * perr)
    static const ST min_base[] = {0, 0, S_MIN/2,  S_MIN/3,  S_MIN/4,  S_MIN/5,  S_MIN/6,  S_MIN/7,  S_MIN/8,  S_MIN/9,  S_MIN/10, S_MIN/11, S_MIN/12, S_MIN/13,
                                        S_MIN/14, S_MIN/15, S_MIN/16, S_MIN/17, S_MIN/18, S_MIN/19, S_MIN/20, S_MIN/21, S_MIN/22, S_MIN/23, S_MIN/24, S_MIN/25,
                                        S_MIN/26, S_MIN/27, S_MIN/28, S_MIN/29, S_MIN/30, S_MIN/31, S_MIN/32, S_MIN/33, S_MIN/34, S_MIN/35, S_MIN/36};
+   const char * psrc = ps;
    ST max;
    ST d;
    int sign = 0;
@@ -384,6 +388,7 @@ ST SFN(r_str2)(const char * ps, char ** pe, int base, int * perr)
 
    if((base < 2) || (base > 36))
    {
+      ps  = psrc;
       err = EINVAL;
       goto Exit;
    }
@@ -394,6 +399,7 @@ ST SFN(r_str2)(const char * ps, char ** pe, int base, int * perr)
 
    if(d >= (uint8_t) base)
    {
+      ps  = psrc;
       err = EINVAL;
       goto Exit;
    }
