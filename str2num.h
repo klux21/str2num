@@ -51,7 +51,7 @@ extern const uint8_t digit_value[256];
 
 /* The functions are full featured wrappers for strtol or strtoul like functions. 
    All functions return the minimum or maximum value of the integer type in case of overflows.  
-   The r_* variants are reentrant save and safe any errors to perr instead in errno. */
+   The r_* variants are reentrant save and return errors in *perr instead in errno. */
 
  int64_t r_str2i64 (const char * ps, char ** pe, int base, int * perr);
 uint64_t r_str2u64 (const char * ps, char ** pe, int base, int * perr);
