@@ -245,13 +245,7 @@ UT UFN(r_str2) (const char * ps, char ** pe, int base, int * perr)
    {
       if(u_ret >= max)
       {
-         if(((uint8_t) base <= digit_value[(uint8_t) *(ps+1)]) && (u_ret == max) && ((u_ret * base) <= (U_MAX - d)))
-         {
-            ++ps;
-            u_ret *= base;
-            u_ret += d ;
-         }
-         else
+         if(((uint8_t) base > digit_value[(uint8_t) *(ps+1)]) || (u_ret > max) || ((u_ret * base) > (U_MAX - d)))
          {
             err   = ERANGE; /* indicates overflow */
             u_ret = U_MAX;
