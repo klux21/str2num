@@ -177,6 +177,13 @@ int run_tests()
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
+      nl = r_str2l(ps + (i&7), NULL, 0, NULL);
+   t1 = TimeStamp() - t0;
+   fprintf(stdout, "An average ___ r_str2l() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+
+   i  = 1000000;
+   t0 = TimeStamp();
+   while (i--)
       nl = str2l(ps + (i&7), NULL, 0);
    t1 = TimeStamp() - t0;
    fprintf(stdout, "An average _____ str2l() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
@@ -209,6 +216,13 @@ int run_tests()
    }
 
    ps = " -12345678901234567890  -54321 ";
+   i  = 1000000;
+   t0 = TimeStamp();
+   while (i--)
+      nll = r_str2ll(ps + (i&15), NULL, 0, NULL);
+   t1 = TimeStamp() - t0;
+   fprintf(stdout, "An average __ r_str2ll() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
@@ -247,6 +261,13 @@ int run_tests()
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
+      nlu = r_str2ul(ps + (i&7), NULL, 0, NULL);
+   t1 = TimeStamp() - t0;
+   fprintf(stdout, "An average __ r_str2ul() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+
+   i  = 1000000;
+   t0 = TimeStamp();
+   while (i--)
       nlu = str2ul(ps + (i&7), NULL, 0);
    t1 = TimeStamp() - t0;
    fprintf(stdout, "An average ____ str2ul() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
@@ -278,6 +299,14 @@ int run_tests()
    }
 
    ps = "  12345678901234567890  -54321 ";
+
+   i  = 1000000;
+   t0 = TimeStamp();
+   while (i--)
+      nllu = r_str2ull(ps + (i&15), NULL, 0, NULL);
+   t1 = TimeStamp() - t0;
+   fprintf(stdout, "An average _ r_str2ull() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
