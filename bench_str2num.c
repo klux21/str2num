@@ -300,7 +300,7 @@ int run_tests()
 
       if (ollu != nllu)
       {
-         fprintf(stderr, "Return values of strtoull() and str2ull() differ for base %d! (%lld != %lld, '%s')\n",
+         fprintf(stderr, "Return values of strtoull() and str2ull() differ for base %d! (%llu != %llu, '%s')\n",
                  (int)(2 + (i & 0x1f)), ollu, nllu, ps + ((i+(i>>4))&31));
          goto Exit;
       }
