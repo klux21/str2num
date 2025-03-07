@@ -210,16 +210,14 @@ UT UFN(r_str2) (const char * ps, char ** pe, int base, int * perr)
          }
       }
    }/* if(!base) */
-#if 1
    else
    {  /* Care about base specifications in hex data even if base is given.
-        (It's a rather dirty thing within the specification of strtoul.) */
+         (It's a rather dirty thing within the specification of strtoul.) */
       if((base == 16) && (*ps == '0') && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t) ps[2]] < 16))
          ps += 2;
       else if((base == 2) && (*ps == '0') && ((ps[1] == 'b') || (ps[1] == 'B')) && (digit_value[(uint8_t) ps[2]] < 2))
          ps += 2;
    }
-#endif
 
    if((base < 2) || (base > 36))
    {
@@ -264,12 +262,14 @@ UT UFN(r_str2) (const char * ps, char ** pe, int base, int * perr)
 
    if (sign < 0)
    {
+#if 0
       if(u_ret > ((U_MAX >> 1) + 1))
       { /* negative value exceeds the minimum of a signed type of that width */
          err   = ERANGE; /* indicates overflow */
-         u_ret = U_MAX;
+         u_ret = ((U_MAX >> 1) + 1);
       }
       else
+#endif
       {
          u_ret = ~u_ret + 1; /* negate the result */
       }
@@ -369,16 +369,14 @@ ST SFN(r_str2)(const char * ps, char ** pe, int base, int * perr)
          }
       }
    }/* if(!base) */
-#if 1
    else
    {  /* Care about base specifications in hex data even if base is given.
-      (It's a rather dirty thing within the specification of strtol.) */
+         (It's a rather dirty thing within the specification of strtol.) */
       if((base == 16) && (*ps == '0') && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t) ps[2]] < 16))
          ps += 2;
       else if((base == 2) && (*ps == '0') && ((ps[1] == 'b') || (ps[1] == 'B')) && (digit_value[(uint8_t) ps[2]] < 2))
          ps += 2;
    }
-#endif
 
    if((base < 2) || (base > 36))
    {
