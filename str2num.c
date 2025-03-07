@@ -214,9 +214,9 @@ UT UFN(r_str2) (const char * ps, char ** pe, int base, int * perr)
    else
    {  /* Care about base specifications in hex data even if base is given.
         (It's a rather dirty thing within the specification of strtoul.) */
-      if((base == 16) && (*ps == '0') && ((ps[1] == 'x') || (ps[1] == 'X')))
+      if((base == 16) && (*ps == '0') && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t) ps[2]] < 16))
          ps += 2;
-      else if((base == 2) && (*ps == '0') && ((ps[1] == 'b') || (ps[1] == 'B')))
+      else if((base == 2) && (*ps == '0') && ((ps[1] == 'b') || (ps[1] == 'B')) && (digit_value[(uint8_t) ps[2]] < 2))
          ps += 2;
    }
 #endif
@@ -373,9 +373,9 @@ ST SFN(r_str2)(const char * ps, char ** pe, int base, int * perr)
    else
    {  /* Care about base specifications in hex data even if base is given.
       (It's a rather dirty thing within the specification of strtol.) */
-      if((base == 16) && (*ps == '0') && ((ps[1] == 'x') || (ps[1] == 'X')))
+      if((base == 16) && (*ps == '0') && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t) ps[2]] < 16))
          ps += 2;
-      else if((base == 2) && (*ps == '0') && ((ps[1] == 'b') || (ps[1] == 'B')))
+      else if((base == 2) && (*ps == '0') && ((ps[1] == 'b') || (ps[1] == 'B')) && (digit_value[(uint8_t) ps[2]] < 2))
          ps += 2;
    }
 #endif
