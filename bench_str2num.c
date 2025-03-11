@@ -1,6 +1,6 @@
 #if 0
 rm -f ./_bench_str2num
-cc -Wall -O3 -o _bench_str2num -I . bench_str2num.c str2num.c
+cc -Wall -O3 -o _bench_str2num -I . -I ../callback_printf ../callback_printf/callback_printf.c  ../callback_printf/sfprintf.c bench_str2num.c str2num.c
 ./_bench_str2num
 exit $?
 #endif
@@ -83,16 +83,30 @@ exit $?
 #include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
-#include <inttypes.h>
+#include <limits.h>
 #include <sys/types.h>
-
+#include <errno.h>
 #if defined (_WIN32) || defined (__CYGWIN__)
+
 #include <windows.h>
+
+#if defined (_WIN32)
+#define strtoll     _strtoi64
+#define strtoull    _strtoui64
+#endif
+
 #else
 #include <sys/time.h>
 #endif
+#include <inttypes.h>
 
+#define PRINTF_LIKE_ARGS(fmtidx, argidx)
+#include <sfprintf.h>
 #include <str2num.h>
+
+#ifndef ARRAY_SIZE
+#define ARRAY_SIZE(x) (sizeof(x)/sizeof((x)[0]))
+#endif
 
 #if defined (_WIN32) || defined (__CYGWIN__)
 
@@ -179,21 +193,21 @@ int run_tests()
    while (i--)
       nl = r_str2l(ps + (i&7), NULL, 0, NULL);
    t1 = TimeStamp() - t0;
-   fprintf(stdout, "An average ___ r_str2l() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+   sfprintf(stdout, "An average ___ r_str2l() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
       nl = str2l(ps + (i&7), NULL, 0);
    t1 = TimeStamp() - t0;
-   fprintf(stdout, "An average _____ str2l() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+   sfprintf(stdout, "An average _____ str2l() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
       ol = strtol(ps + (i&7), NULL, 0);
    t1 = TimeStamp() - t0;
-   fprintf(stdout, "An average ____ strtol() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+   sfprintf(stdout, "An average ____ strtol() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 100000;
    while (i--)
@@ -203,13 +217,13 @@ int run_tests()
 
       if (ol != nl)
       {
-         fprintf(stderr, "Return values of strtol() and str2l() differ for base %d! (%ld != %ld)", (int)(2 + (i & 0x1f)), ol, nl);
+         sfprintf(stderr, "Return values of strtol() and str2l() differ for base %d! (%ld != %ld)", (int)(2 + (i & 0x1f)), ol, nl);
          goto Exit;
       }
       if(pe != pr)
       {
          ps += ((i+(i>>4))&15);
-         fprintf(stderr, "The returned endpointer strtol() and str2l() differ for base %d! "
+         sfprintf(stderr, "The returned endpointer strtol() and str2l() differ for base %d! "
                  "('%.16s' != '%.16s', scan '%.*s' != '%.*s')\n", (int)(2 + (i & 0x1f)), pr, pe, (int)(pr-ps), ps, (int)(pe-ps), ps);
          goto Exit;
       }
@@ -221,21 +235,21 @@ int run_tests()
    while (i--)
       nll = r_str2ll(ps + (i&15), NULL, 0, NULL);
    t1 = TimeStamp() - t0;
-   fprintf(stdout, "An average __ r_str2ll() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+   sfprintf(stdout, "An average __ r_str2ll() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
       nll = str2ll(ps + (i&15), NULL, 0);
    t1 = TimeStamp() - t0;
-   fprintf(stdout, "An average ____ str2ll() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+   sfprintf(stdout, "An average ____ str2ll() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
       oll = strtoll(ps + (i&15), NULL, 0);
    t1 = TimeStamp() - t0;
-   fprintf(stdout, "An average ___ strtoll() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+   sfprintf(stdout, "An average ___ strtoll() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 100000;
    while (i--)
@@ -245,13 +259,13 @@ int run_tests()
 
       if (oll != nll)
       {
-         fprintf(stderr, "Return values of strtoll() and str2ll() differ for base %d! (%lld != %lld)\n", (int)(2 + (i & 0x1f)), oll, nll);
+         sfprintf(stderr, "Return values of strtoll() and str2ll() differ for base %d! (%lld != %lld)\n", (int)(2 + (i & 0x1f)), oll, nll);
          goto Exit;
       }
       if(pe != pr)
       {
          ps += ((i+(i>>4))&31);
-         fprintf(stderr, "The returned endpointer strtoll() and str2ll() differ for base %d! "
+         sfprintf(stderr, "The returned endpointer strtoll() and str2ll() differ for base %d! "
                  "('%.16s' != '%.16s', scan '%.*s' != '%.*s')\n", (int)(2 + (i & 0x1f)), pr, pe, (int)(pr-ps), ps, (int)(pe-ps), ps);
          goto Exit;
       }
@@ -263,21 +277,21 @@ int run_tests()
    while (i--)
       nlu = r_str2ul(ps + (i&7), NULL, 0, NULL);
    t1 = TimeStamp() - t0;
-   fprintf(stdout, "An average __ r_str2ul() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+   sfprintf(stdout, "An average __ r_str2ul() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
       nlu = str2ul(ps + (i&7), NULL, 0);
    t1 = TimeStamp() - t0;
-   fprintf(stdout, "An average ____ str2ul() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+   sfprintf(stdout, "An average ____ str2ul() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
       olu = strtoul(ps + (i&7), NULL, 0);
    t1 = TimeStamp() - t0;
-   fprintf(stdout, "An average ___ strtoul() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+   sfprintf(stdout, "An average ___ strtoul() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 100000;
    while (i--)
@@ -286,13 +300,13 @@ int run_tests()
       olu = strtoul(ps + ((i+(i>>4))&15), &pr, 2 + (i & 0x1f));
       if (olu != nlu)
       {
-         fprintf(stdout, "Return values of strtoul() and str2ul() differ for base %d! (%lu != %lu)\n", (int)(2 + (i & 0x1f)), olu, nlu);
+         sfprintf(stdout, "Return values of strtoul() and str2ul() differ for base %d! (%lu != %lu)\n", (int)(2 + (i & 0x1f)), olu, nlu);
          goto Exit;
       }
       if(pe != pr)
       {
          ps += ((i+(i>>4))&15);
-         fprintf(stderr, "The returned endpointer strtoul() and str2ul() differ for base %d! "
+         sfprintf(stderr, "The returned endpointer strtoul() and str2ul() differ for base %d! "
                  "('%.16s' != '%.16s', scan '%.*s' != '%.*s')\n", (int)(2 + (i & 0x1f)), pr, pe, (int)(pr-ps), ps, (int)(pe-ps), ps);
          goto Exit;
       }
@@ -305,21 +319,21 @@ int run_tests()
    while (i--)
       nllu = r_str2ull(ps + (i&15), NULL, 0, NULL);
    t1 = TimeStamp() - t0;
-   fprintf(stdout, "An average _ r_str2ull() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+   sfprintf(stdout, "An average _ r_str2ull() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
       nllu = str2ull(ps + (i&15), NULL, 0);
    t1 = TimeStamp() - t0;
-   fprintf(stdout, "An average ___ str2ull() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+   sfprintf(stdout, "An average ___ str2ull() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
       ollu = strtoull(ps + (i&15), NULL, 0);
    t1 = TimeStamp() - t0;
-   fprintf(stdout, "An average __ strtoull() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+   sfprintf(stdout, "An average __ strtoull() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 100000;
    while (i--)
@@ -329,14 +343,14 @@ int run_tests()
 
       if (ollu != nllu)
       {
-         fprintf(stderr, "Return values of strtoull() and str2ull() differ for base %d! (%llu != %llu, '%s')\n",
+         sfprintf(stderr, "Return values of strtoull() and str2ull() differ for base %d! (%llu != %llu, '%s')\n",
                  (int)(2 + (i & 0x1f)), ollu, nllu, ps + ((i+(i>>4))&31));
          goto Exit;
       }
       if(pe != pr)
       {
          ps += ((i+(i>>4))&31);
-         fprintf(stderr, "The returned endpointer strtoull() and str2ull() differ for base %d! "
+         sfprintf(stderr, "The returned endpointer strtoull() and str2ull() differ for base %d! "
                  "('%.16s' != '%.16s', scan '%.*s' != '%.*s')\n", (int)(2 + (i & 0x1f)), pr, pe, (int)(pr-ps), ps, (int)(pe-ps), ps);
          goto Exit;
       }
@@ -347,6 +361,110 @@ int run_tests()
    return (iret);
 } /* run_tests() */
 
+int test_str2value()
+{
+   int bRet = 0;
+   char buf[256];
+
+   int64_t l1;
+   int64_t l2;
+   uint64_t u1;
+   uint64_t u2;
+   char * p1;
+   char * p2;
+   int e1;
+   int e2;
+   int    base = 2;
+   int64_t long_values[] = {0, 1, -1, LLONG_MIN, LLONG_MIN+1, LLONG_MIN+2, LLONG_MIN+3, LLONG_MAX, LLONG_MAX-1, LLONG_MAX-2, LLONG_MAX-3};
+
+   while(base <= 36)
+   {
+      int64_t * pvalue = long_values;
+      size_t count  = ARRAY_SIZE(long_values);
+      while (count--) 
+      {
+          ssprintf(buf, "%r*l8d", base, *pvalue++);
+
+          errno = 0;
+          l1 = strtoll(buf, &p1, base);
+          e1 = errno;
+          errno = 0;
+          l2 = str2ll(buf, &p2, base);
+          e2 = errno;
+
+          if ((l2 != l1) || (p1 != p2) || (e1 && !e2) || (e2 && !e1))
+          {
+             sfprintf(stderr, "Different return values of strtoll (%l8d (0x%l8x), pos %td, errno=%d)\n"
+                      " and str2ll (%l8d (0x%l8x), pos %td, errno=%d)\n for base %d and string '%s'!\n",
+                       l1, l1, p1-buf, e1, l2, l2, p2-buf, e2, base, buf);
+             goto Exit;
+          }
+
+          errno = 0;
+          u1 = strtoull(buf, &p1, base);
+          e1 = errno;
+          errno = 0;
+          u2 = str2ull(buf, &p2, base);
+          e2 = errno;
+
+          if ((u2 != u1) || (p1 != p2) || (e1 && !e2) || (e2 && !e1))
+          {
+             sfprintf(stderr, "Different return values of strtoull (%l8u (0x%l8x), pos %td, errno=%d)\n"
+                              " and str2ull (%l8u (0x%l8x), pos %td, errno=%d)\n for base %d and string '%s'!\n",
+                       u1, u1, p1-buf, e1, u2, u2, p2-buf, e2, base, buf);
+             goto Exit;
+          }
+      }
+      ++base;
+   }
+
+   base = 2;
+   while(base <= 36)
+   {
+      int64_t * pvalue = long_values;
+      size_t count  = ARRAY_SIZE(long_values);
+      while (count--) 
+      {
+          ssprintf(buf, "%r*l8d%d", base, *pvalue++, base-1);
+          errno = 0;
+          l1 = strtoll(buf, &p1, base);
+          e1 = errno;
+          errno = 0;
+          l2 = str2ll(buf, &p2, base);
+          e2 = errno;
+          if ((l2 != l1) || (p1 != p2) || (e1 && !e2) || (e2 && !e1))
+          {
+             sfprintf(stderr, "Different return values of strtoll (%l8d (0x%l8x), pos %td, errno=%d)\n"
+                              " and str2ll (%l8d (0x%l8x), pos %td, errno=%d)\n for base %d and string '%s'!\n",
+                       l1, l1, p1-buf, e1, l2, l2, p2-buf, e2, base, buf);
+             l2 = str2ll(buf, &p2, base);
+             goto Exit;
+          }
+
+          errno = 0;
+          u1 = strtoull(buf, &p1, base);
+          e1 = errno;
+          errno = 0;
+          u2 = str2ull(buf, &p2, base);
+          e2 = errno;
+
+          if ((u2 != u1) || (p1 != p2) || (e1 && !e2) || (e2 && !e1))
+          {
+             sfprintf(stderr, "Different return values of strtoull (%l8u (0x%l8x), pos %td, errno=%d)\n"
+                              " and str2ull (%l8u (0x%l8x), pos %td, errno=%d)\n for base %d and string '%s'!\n",
+                       u1, u1, p1-buf, e1, u2, u2, p2-buf, e2, base, buf);
+             u2 = str2ull(buf, &p2, base);
+             //goto Exit;
+          }
+      }
+      ++base;
+   }
+
+   bRet = 1;
+   Exit:;
+   return (bRet);
+} /* int test_str2value */
+
 
 /* ------------------------------------------------------------------------- *\
    main function
@@ -354,6 +472,8 @@ int run_tests()
 int main(int argc, char * argv[])
 {
     int iret = 1;
+    if(!test_str2value())
+        goto Exit;
 
     if(!run_tests())
         goto Exit;
