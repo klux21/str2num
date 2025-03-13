@@ -245,7 +245,7 @@ UT UFN(r_str2) (const char * ps, char ** pe, int base, int * perr)
       {
          if(((uint8_t) base > digit_value[(uint8_t) *(ps+1)]) || (u_ret > max) || ((u_ret * base) > (U_MAX - d)))
          {
-            err   = ERANGE; /* indicates overflow */
+            err   = ERANGE; /* indicate overflow error */
             u_ret = U_MAX;
 #if 1
             /* Move to end of valid digits even if those exceed the range of our type. */
@@ -263,9 +263,11 @@ UT UFN(r_str2) (const char * ps, char ** pe, int base, int * perr)
    if (sign < 0)
    {
 #if 0
+      /* Disabled because the POSIX standard demands a negation only. :o( */
+
       if(u_ret > ((U_MAX >> 1) + 1))
-      { /* negative value exceeds the minimum of a signed type of that width */
-         err   = ERANGE; /* indicates overflow */
+      { /* The negative value exceeds the minimum of a signed type of that width. */
+         err   = ERANGE; /* indicate overflow error */
          u_ret = ((U_MAX >> 1) + 1);
       }
       else
@@ -412,7 +414,7 @@ ST SFN(r_str2)(const char * ps, char ** pe, int base, int * perr)
                s_ret *= -base;
                if(s_ret < (S_MIN + d))
                {
-                  err = ERANGE; /* indicate no overflow */
+                  err = ERANGE; /* indicate overflow error */
                   s_ret = S_MIN;
                }
                else
@@ -423,7 +425,7 @@ ST SFN(r_str2)(const char * ps, char ** pe, int base, int * perr)
                s_ret *= base;
                if(s_ret > (S_MAX - d))
                {
-                  err = ERANGE; /* indicate no overflow */
+                  err = ERANGE; /* indicate overflow error */
                   s_ret = S_MAX;
                }
                else
