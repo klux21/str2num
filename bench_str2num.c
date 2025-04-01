@@ -383,7 +383,10 @@ int test_str2value()
       size_t count  = ARRAY_SIZE(long_values);
       while (count--) 
       {
-          ssprintf(buf, "%r*l8d", base, *pvalue++);
+          if ((base == 16) && (*pvalue > 0))
+              ssprintf(buf, "0x%r*l8d", base, *pvalue++);
+          else
+              ssprintf(buf, "%r*l8d", base, *pvalue++);
 
           errno = 0;
           l1 = strtoll(buf, &p1, base);
