@@ -486,9 +486,9 @@ int main(int argc, char * argv[])
     Exit:;
 
     if(!iret)
-        fprintf(stdout, "All tests passed!\n");
+        sfprintf(stdout, "All tests passed!\n");
     else
-        fprintf(stderr, "Tests failed!\n");
+        sfprintf(stderr, "Tests failed!\n");
 
     return (iret);
 }/* main() */
