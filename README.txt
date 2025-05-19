@@ -2,8 +2,8 @@ str2num provides very fast, portable and full featured wrappers for
 strtol, strtoul, strtoll and strtoull like functions.
 
 The implementation doesn't use any integer divisions and for this it is much
-faster than the implementation of the of any compilers that I have tested until
-now, including gcc, clang and Microsoft Visual Studio on several plattforms.
+faster than the common implementation of several compilers that I have tested
+until now, including gcc, clang and Visual Studio on several plattforms.
 The interface currently provides the following most important functions
 
 
