@@ -246,7 +246,18 @@ UT UFN(r_str2) (const char * ps, char ** pe, int base, int * perr)
          if(((uint8_t) base > digit_value[(uint8_t) *(ps+1)]) || (u_ret > max) || ((u_ret * base) > (U_MAX - d)))
          {
             err   = ERANGE; /* indicate overflow error */
-            u_ret = U_MAX;
+#if 0
+            /* This does not match POSIX standard that allows return of U_MAX only. :o( */
+
+            if (sign < 0)
+            { /* negative value exceeds the minimum of a signed type of that width */
+               u_ret = ((U_MAX >> 1) + 1);
+            }
+            else
+#endif
+            {
+               u_ret = U_MAX;
+            }
 #if 1
             /* Move to end of valid digits even if those exceed the range of our type. */
             while ((uint8_t) base > digit_value[(uint8_t) *(++ps)])
@@ -263,7 +274,7 @@ UT UFN(r_str2) (const char * ps, char ** pe, int base, int * perr)
    if (sign < 0)
    {
 #if 0
-      /* Disabled because the POSIX standard demands a negation only. :o( */
+      /* This does not match POSIX standard that demands a negation. :o( */
 
       if(u_ret > ((U_MAX >> 1) + 1))
       { /* The negative value exceeds the minimum of a signed type of that width. */
