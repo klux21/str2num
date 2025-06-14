@@ -50,10 +50,10 @@ time API functions in https://github.com/klux21/limitless_times which provide
 truly fast, portable and an easy to use time and timezone handling functions.
 Also the portable sprintf wrappers at
 https://github.com/klux21/callback_printf are worth a look. Once you have
-ever dealt with multiple platforms then you should the advantages of a solid
-base that you can count on. It's the mass of little problems that steal your
-time and drain power and rarely the big tasks that seem just a simple work to
-be done usually.
+ever dealt with multiple platforms then you should know the advantages of a
+solid base that you can count on. It's the mass of little problems that steal
+your time and drain power and rarely the big tasks that seem just a simple
+work to be done usually.
  
 Kind regards,
 
