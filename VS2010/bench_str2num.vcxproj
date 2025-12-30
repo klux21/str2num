@@ -167,7 +167,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="../../callback_printf/callback_printf.h" />
-    <ClInclude Include="../../str2num.h" />
     <ClInclude Include="../../callback_printf/sfprintf.h" />
     <ClInclude Include="../str2num.h" />
     <ClInclude Include="version.h" />
