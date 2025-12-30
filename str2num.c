@@ -81,18 +81,27 @@ static void *   pvnnan = &nnan;
 
 static long double powil (uint8_t base, uint32_t expo)
 {
-   long double dret = 1;
-   long double p = base;
+   long double val = 1;
+   long double p   = base;
 
-   while (expo)
+   if (expo)
    {
       if (expo & 1)
-         dret *= p;
+          val = p;
 
-      p *= p;
       expo >>= 1;
+      while (expo)
+      {
+         p *= p;
+
+         if (expo & 1)
+            val *= p;
+
+         expo >>= 1;
+      }
    }
-   return (dret);
+
+   return (val);
 } /* long double powil (uint8_t base, uint32_t expo) */
 
 
@@ -103,18 +112,27 @@ static long double powil (uint8_t base, uint32_t expo)
 
 static double powi (uint8_t base, uint32_t expo)
 {
-   double dret = 1;
-   double p = base;
+   double val = 1;
+   double p   = base;
 
-   while (expo)
+   if (expo)
    {
       if (expo & 1)
-         dret *= p;
+          val = p;
 
-      p *= p;
       expo >>= 1;
+      while (expo)
+      {
+         p *= p;
+
+         if (expo & 1)
+            val *= p;
+
+         expo >>= 1;
+      }
    }
-   return (dret);
+
+   return (val);
 } /* double powi (uint8_t base, int32_t expo) */
 
 
