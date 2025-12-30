@@ -59,6 +59,696 @@ const uint8_t digit_value[256] = { 64,64,64,64, 64,64,64,64, 64,64,64,64, 64,64,
                                    64,64,64,64, 64,64,64,64, 64,64,64,64, 64,64,64,64,   64,64,64,64, 64,64,64,64, 64,64,64,64, 64,64,64,64,
                                    64,64,64,64, 64,64,64,64, 64,64,64,64, 64,64,64,64,   64,64,64,64, 64,64,64,64, 64,64,64,64, 64,64,64,64 };
 
+
+/* ========================================================================= *\
+   Floating point conversion functions
+\* ========================================================================= */
+
+static uint32_t inf   = 0x7f800000;
+static uint32_t ninf  = 0xff800000;
+static uint32_t nan   = 0x7fc00000;
+static uint32_t nnan  = 0xffc00000;
+static void *   pvinf  = &inf;
+static void *   pvninf = &ninf;
+static void *   pvnan  = &nan;
+static void *   pvnnan = &nnan;
+
+
+/* ------------------------------------------------------------------------- *\
+   powil calculates a power of the base and returns it as a long double.
+   See comments of rebase() in callback_printf for details.
+\* ------------------------------------------------------------------------- */
+
+static long double powil (uint8_t base, int32_t iexpo)
+{
+   struct basepows_s {long double p; int32_t e; } basepow [32];
+   struct basepows_s * pb = basepow;
+   long double p = base;
+   int32_t expo = 1;
+
+   while (expo <= iexpo)
+   {
+      pb->e = expo;
+      pb->p = p;
+      expo += expo;
+      p *= p;
+      ++pb;
+   }
+
+   expo = 0;
+   p = 1.0;
+
+   while (pb != basepow)
+   {
+      --pb;
+      if((expo + pb->e) <= iexpo)
+      {
+         p *= pb->p;
+         expo += pb->e;
+      }
+   }
+
+   return (p);
+} /* long double powil (uint8_t base, int32_t iexpo) */
+
+
+/* ------------------------------------------------------------------------- *\
+   powi calculates a power of the base and returns it as a double.
+   See comments of rebase() in callback_printf.c for details.
+\* ------------------------------------------------------------------------- */
+
+static double powi (uint8_t base, int32_t iexpo)
+{
+   struct basepows_s {  double p; int32_t e; } basepow [20];
+   struct basepows_s * pb = basepow;
+   double p = base;
+   int32_t expo = 1;
+
+   while (expo <= iexpo)
+   {
+      pb->e = expo;
+      pb->p = p;
+      expo += expo;
+      p *= p;
+      ++pb;
+   }
+
+   expo = 0;
+   p = 1.0;
+
+   while (pb != basepow)
+   {
+      --pb;
+      if((expo + pb->e) <= iexpo)
+      {
+         p *= pb->p;
+         expo += pb->e;
+      }
+   }
+
+   return (p);
+} /* double powi (uint8_t base, int32_t iexpo) */
+
+
+/* ------------------------------------------------------------------------- *\
+   r_str2ld reads a long double from a string and cares about a specified base.
+\* ------------------------------------------------------------------------- */
+
+long double r_str2ld(const char * psrc, char ** pend, int base, int * perr)
+{
+   long double  dret  = 0.0;
+   int          err   = EINVAL;
+   const char * ps    = psrc;
+   uint64_t     m0    = 0;   /* lower bits of mantissa */
+   uint64_t     m1    = 0;   /* higher bits of mantissa */
+   int32_t      sign  = 0;   /* sign of the value */
+   int32_t      e     = 0;   /* value of exponent */
+   int32_t      c     = 0;   /* correction of comma position */
+   uint8_t      d     = 0;   /* last found digit */
+
+   if(!ps || (base == 1) || (base > 36))
+      goto Exit;
+
+   /* skip leading blanks */
+   while((*ps == ' ') || ((*ps >= 0x9) && (*ps <= 0xd)))
+      ++ps;
+
+   if(*ps == '-')
+   {
+      sign = -1;
+      ++ps;
+   }
+   else if(*ps == '+')
+   {
+      sign = 1;
+      ++ps;
+   }
+
+   if(((*ps | 0x20) == 'i') && ((*(ps+1)  | 0x20) == 'n') && ((*(ps+2) | 0x20) == 'f'))
+   { /* "INF" found */
+      if (((*(ps+3) | 0x20) == 'i') && ((*(ps+4)  | 0x20) == 'n') && ((*(ps+5) | 0x20) == 'i') && ((*(ps+6) | 0x20) == 't') && ((*(ps+7) | 0x20) == 'y') &&
+          ((base <= 34) || (((digit_value[(uint8_t) *(ps+8)] >= base) && (*(ps+8) != '.') && (*(ps+8) != '~')))))
+      {
+         ps += 8;
+
+         if(sign >= 0)
+            dret = *(float*) pvinf;
+         else
+            dret = *(float*) pvninf;
+
+         err = 0;
+         goto Exit;
+      }
+
+      if ((base <= 23) || ((digit_value[(uint8_t) *(ps+3)] >= base) && (*(ps+3) != '.') && (*(ps+3) != '~')))
+      {
+         ps += 3;
+
+         if(sign >= 0)
+            dret = *(float*) pvinf;
+         else
+            dret = *(float*) pvninf;
+
+         err = 0;
+         goto Exit;
+      }
+   }
+   else if(((*ps | 0x20) == 'n') && ((*(ps+1)  | 0x20) == 'a') && ((*(ps+2) | 0x20) == 'n'))
+   { /* "NAN" found */
+      if ((base <= 23) || ((digit_value[(uint8_t) *(ps+3)] >= base) && (*(ps+3) != '.') && (*(ps+3) != '~')))
+      {
+         ps += 3;
+
+         if(sign >= 0)
+            dret = *(float*) pvnan;
+         else
+            dret = *(float*) pvnnan;
+
+         err = 0;
+         goto Exit;
+      }
+   }
+
+   if(!base)
+   { /* let's detect the base */
+      base = 10; /* default base is 10 */
+
+      if(*ps == '0')
+      {
+         if(((*(ps+1) == 'x') || (*(ps+1) == 'X')) && (digit_value[(uint8_t) *(ps+2)] < 16))
+         {
+            base = 16;
+            ps += 2;
+         }
+         else if(((*(ps+1) == 'b') || (*(ps+1) == 'B')) && (digit_value[(uint8_t) *(ps+2)] < 2))
+         {
+            base = 2;
+            ps += 2;
+         }
+      }
+   }/* if(!base) */
+   else
+   {
+      if((base < 2) || (base > 36))
+         goto Exit; /* invalid base */
+
+      /* Care about base specifications in hex data even if base is given.
+         (It's a rather dirty thing within the specification of strtoul.) */
+      if((base == 16) && (*ps == '0') && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t) ps[2]] < 16))
+         ps += 2;
+      else if((base == 2) && (*ps == '0') && ((ps[1] == 'b') || (ps[1] == 'B')) && (digit_value[(uint8_t) ps[2]] < 2))
+         ps += 2;
+   }
+
+   if(digit_value[(uint8_t) *ps] >= base)
+   { /* not a valid number */
+      ps = psrc;
+      goto Exit;
+   }
+
+   while (*ps == '0')
+     ++ps; /* skip leading zeros */
+
+   d = digit_value[(uint8_t) *ps];
+   while(d < base)
+   {
+      if (m1 < 0x400000000000000ll)
+      {
+         m0 *= base;
+         m1 *= base;
+         m0 += d;
+         m1 += m0 >> 58;
+         m0 &= 0x3ffffffffffffffll;
+      }
+      else
+      {
+         ++c;
+      }
+
+      d = digit_value[(uint8_t) *(++ps)];
+   }
+
+   if(*ps == '.')
+   {
+      d = digit_value[(uint8_t) *(++ps)];
+      while(d < base)
+      {
+         if (m1 < 0x400000000000000ll)
+         {
+            m0 *= base;
+            m1 *= base;
+            m0 += d;
+            m1 += m0 >> 58;
+            m0 &= 0x3ffffffffffffffll;
+            --c;
+         }
+         d = digit_value[(uint8_t) *(++ps)];
+      }
+   }
+
+   if (((base < 15) && ((*ps | 0x20) == 'e')) || ((base >= 15) && (*ps == '~')))
+   {
+      int32_t   exp_sign = 0;   /* whether the exponent is signed */
+
+      d = (uint8_t) *(ps+1);
+      if(digit_value[d] < base)
+      {
+         e   = digit_value[d];
+         ps += 2;
+      }
+      else if (d == '+')
+      {
+         d = digit_value[(uint8_t) *(ps+2)];
+         if(d < base)
+         {
+            e   = d;
+            ps += 3;
+         }
+      }
+      else if (d == '-')
+      {
+         d = digit_value[(uint8_t) *(ps+2)];
+         if(d < base)
+         {
+            exp_sign = 1;
+            e   = d;
+            ps += 3;
+         }
+      }
+
+      d = digit_value[(uint8_t) *ps];
+      while(d < base)
+      {
+         e *= base;
+         e += d;
+         d  = digit_value[(uint8_t) *(++ps)];
+      }
+
+      if(exp_sign)
+         e = -e;
+   }
+   else if ((base == 16) && ((*ps | 0x20) == 'p'))
+   {  /* Seems to be a printf %a of %A output string that uses a decimal printed binary exponent ... */
+      int32_t   exp_sign = 0;   /* whether the exponent is signed */
+
+      d = (uint8_t) *(ps+1);
+      if(digit_value[d] < 10)
+      {
+         e = digit_value[d];
+         ps += 2;
+      }
+      else if (d == '+')
+      {
+         d = digit_value[(uint8_t) *(ps+2)];
+         if(d < 10)
+         {
+            e   = d;
+            ps += 3;
+         }
+      }
+      else if (d == '-')
+      {
+         d = digit_value[(uint8_t) *(ps+2)];
+         if(d < 10)
+         {
+            exp_sign = 1;
+            e   = d;
+            ps += 3;
+         }
+      }
+
+      d = digit_value[(uint8_t) *ps];
+      while(d < 10)
+      {
+         e *= 10;
+         e += d;
+         d  = digit_value[(uint8_t) *(++ps)];
+      }
+
+      if(exp_sign)
+         e = -e;
+
+      base = 2;
+      c   *= 4;
+   }
+
+   e += c;
+
+   if(e >= 0)
+   {
+      dret = ((long double) m1 * 0x400000000000000ll + m0) * powil(base, e);
+   }
+   else
+   {  /* Try to prevent a possible overflow within powil */
+      long double p;
+      c  = e / 2;
+      e -= c;
+      p  = powil(base, -c);
+
+      dret = ((long double) m1 * 0x400000000000000ll + m0) / p;
+
+      if(e != c)
+         p *= base;
+
+      dret /= p;
+   }
+
+   if(sign < 0)
+      dret = -dret;
+
+   err = 0;
+
+Exit:;
+
+   if(pend)
+      *pend = (char *) ps; /* store pointer to end position */
+
+   if(perr)
+      *perr = err;
+
+   return (dret);
+} /* long double r_str2ld(const char * ps, char ** pe, int base, int * perr) */
+
+
+/* ------------------------------------------------------------------------- *\
+   str2d is a wrapper for strtold that calls r_str2ld for reading long doubles.
+\* ------------------------------------------------------------------------- */
+
+long double str2ld(const char * psrc, char ** pend)
+{
+   int err = 0;
+   long double dret = r_str2ld(psrc, pend, 0, &err);
+   if(err)
+      errno = err;
+   return (dret);
+} /* long double str2ld(const char * psrc, char ** pend) */
+
+
+/* ------------------------------------------------------------------------- *\
+   r_str2d reads a double from a string and cares about a specified base.
+\* ------------------------------------------------------------------------- */
+
+double r_str2d(const char * psrc, char ** pend, int base, int * perr)
+{
+   double       dret  = 0.0;
+   int          err   = EINVAL;
+   const char * ps    = psrc;
+   uint64_t     m     = 0;   /* mantissa */
+   int32_t      sign  = 0;   /* sign of value */
+   int32_t      e     = 0;   /* value of exponent */
+   int32_t      c     = 0;   /* correction of comma position */
+   uint8_t      d     = 0;   /* last found digit */
+
+   if(!ps || (base == 1) || (base > 36))
+      goto Exit;
+
+   /* skip leading blanks */
+   while((*ps == ' ') || ((*ps >= 0x9) && (*ps <= 0xd)))
+      ++ps;
+
+   if(*ps == '-')
+   {
+      sign = -1;
+      ++ps;
+   }
+   else if(*ps == '+')
+   {
+      sign = 1;
+      ++ps;
+   }
+
+   if(((*ps | 0x20) == 'i') && ((*(ps+1)  | 0x20) == 'n') && ((*(ps+2) | 0x20) == 'f'))
+   { /* "INF" found */
+      if (((*(ps+3) | 0x20) == 'i') && ((*(ps+4)  | 0x20) == 'n') && ((*(ps+5) | 0x20) == 'i') && ((*(ps+6) | 0x20) == 't') && ((*(ps+7) | 0x20) == 'y') &&
+          ((base <= 34) || (((digit_value[(uint8_t) *(ps+8)] >= base) && (*(ps+8) != '.') && (*(ps+8) != '~')))))
+      {
+         ps += 8;
+
+         if(sign >= 0)
+            dret = *(float*) pvinf;
+         else
+            dret = *(float*) pvninf;
+
+         err = 0;
+         goto Exit;
+      }
+
+      if ((base <= 23) || ((digit_value[(uint8_t) *(ps+3)] >= base) && (*(ps+3) != '.') && (*(ps+3) != '~')))
+      {
+         ps += 3;
+
+         if(sign >= 0)
+            dret = *(float*) pvinf;
+         else
+            dret = *(float*) pvninf;
+
+         err = 0;
+         goto Exit;
+      }
+   }
+   else if(((*ps | 0x20) == 'n') && ((*(ps+1)  | 0x20) == 'a') && ((*(ps+2) | 0x20) == 'n'))
+   { /* "NAN" found */
+      if ((base <= 23) || ((digit_value[(uint8_t) *(ps+3)] >= base) && (*(ps+3) != '.') && (*(ps+3) != '~')))
+      {
+         ps += 3;
+
+         if(sign >= 0)
+            dret = *(float*) pvnan;
+         else
+            dret = *(float*) pvnnan;
+
+         err = 0;
+         goto Exit;
+      }
+   }
+
+   if(!base)
+   { /* let's detect the base */
+      base = 10; /* default base is 10 */
+
+      if(*ps == '0')
+      {
+         if(((*(ps+1) == 'x') || (*(ps+1) == 'X')) && (digit_value[(uint8_t) *(ps+2)] < 16))
+         {
+            base = 16;
+            ps += 2;
+         }
+         else if(((*(ps+1) == 'b') || (*(ps+1) == 'B')) && (digit_value[(uint8_t) *(ps+2)] < 2))
+         {
+            base = 2;
+            ps += 2;
+         }
+      }
+   }/* if(!base) */
+   else
+   {
+      if((base < 2) || (base > 36))
+         goto Exit; /* invalid base */
+
+      /* Care about base specifications in hex data even if base is given.
+         (It's a rather dirty thing within the specification of strtoul.) */
+      if((base == 16) && (*ps == '0') && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t) ps[2]] < 16))
+         ps += 2;
+      else if((base == 2) && (*ps == '0') && ((ps[1] == 'b') || (ps[1] == 'B')) && (digit_value[(uint8_t) ps[2]] < 2))
+         ps += 2;
+   }
+
+   if(digit_value[(uint8_t) *ps] >= base)
+   { /* not a valid number */
+      ps = psrc;
+      goto Exit;
+   }
+
+   while (*ps == '0')
+     ++ps; /* skip leading zeros */
+
+   d = digit_value[(uint8_t) *ps];
+   while(d < base)
+   {
+      if (m < 0x400000000000000ll)
+      {
+         m *= base;
+         m += d;
+      }
+      else
+      {
+         ++c;
+      }
+
+      d = digit_value[(uint8_t) *(++ps)];
+   }
+
+   if(*ps == '.')
+   {
+      d = digit_value[(uint8_t) *(++ps)];
+      while(d < base)
+      {
+         if (m < 0x400000000000000ll)
+         {
+            m *= base;
+            m += d;
+            --c;
+         }
+         d = digit_value[(uint8_t) *(++ps)];
+      }
+   }
+
+   if (((base < 15) && ((*ps | 0x20) == 'e')) || ((base >= 15) && (*ps == '~')))
+   {
+      int32_t exp_sign = 0; /* sign of exponent */
+
+      d = (uint8_t) *(ps+1);
+      if(digit_value[d] < base)
+      {
+         e   = digit_value[d];
+         ps += 2;
+      }
+      else if (d == '+')
+      {
+         d = digit_value[(uint8_t) *(ps+2)];
+         if(d < base)
+         {
+            e   = d;
+            ps += 3;
+         }
+      }
+      else if (d == '-')
+      {
+         d = digit_value[(uint8_t) *(ps+2)];
+         if(d < base)
+         {
+            exp_sign = 1;
+            e   = d;
+            ps += 3;
+         }
+      }
+
+      d = digit_value[(uint8_t) *ps];
+      while(d < base)
+      {
+         e *= base;
+         e += d;
+         d  = digit_value[(uint8_t) *(++ps)];
+      }
+
+      if(exp_sign)
+         e = -e;
+   }
+   else if ((base == 16) && ((*ps | 0x20) == 'p'))
+   {  /* Seems to be a printf %a of %A output string that uses a decimal printed binary exponent ... */
+      int32_t exp_sign = 0;
+
+      d = (uint8_t) *(ps+1);
+      if(digit_value[d] < 10)
+      {
+         e = digit_value[d];
+         ps += 2;
+      }
+      else if (d == '+')
+      {
+         d = digit_value[(uint8_t) *(ps+2)];
+         if(d < 10)
+         {
+            e   = d;
+            ps += 3;
+         }
+      }
+      else if (d == '-')
+      {
+         d = digit_value[(uint8_t) *(ps+2)];
+         if(d < 10)
+         {
+            exp_sign = 1;
+            e   = d;
+            ps += 3;
+         }
+      }
+
+      d = digit_value[(uint8_t) *ps];
+      while(d < 10)
+      {
+         e *= 10;
+         e += d;
+         d = digit_value[(uint8_t) *(++ps)];
+      }
+
+      if(exp_sign)
+         e = -e;
+
+      base = 2;
+      c   *= 4;
+   }
+
+   e += c;
+
+   if(e >= 0)
+   {
+      dret = (double) m * powi(base, e);
+   }
+   else
+   {  /* Try to prevent a possible overflow within powi */
+      double p;
+      c  = e / 2;
+      e -= c;
+      p  = powi(base, -c);
+
+      dret = (double) m / p;
+
+      if(e != c)
+         p *= base;
+
+      dret /= p;
+   }
+
+   if(sign < 0)
+      dret = -dret;
+
+   err = 0;
+
+Exit:;
+
+   if(pend)
+      *pend = (char *) ps; /* store pointer to end position */
+
+   if(perr)
+      *perr = err;
+
+   return (dret);
+} /* double r_str2d(const char * ps, char ** pe, int base, int * perr) */
+
+
+/* ------------------------------------------------------------------------- *\
+   str2d is a wrapper for strtod that calls r_str2d for reading doubles.
+\* ------------------------------------------------------------------------- */
+
+double str2d(const char * psrc, char ** pend)
+{
+   int err = 0;
+   double dret = r_str2d(psrc, pend, 0, &err);
+   if(err)
+      errno = err;
+   return (dret);
+} /* double str2d(const char * psrc, char ** pend) */
+
+
+/* ------------------------------------------------------------------------- *\
+   str2f is a wrapper for strtof that calls r_str2d for reading floats.
+\* ------------------------------------------------------------------------- */
+
+float str2f(const char * psrc, char ** pend)
+{
+   int err = 0;
+   float dret = (float) r_str2d(psrc, pend, 0, &err);
+   if(err)
+      errno = err;
+   return (dret);
+} /* double str2d(const char * psrc, char ** pend) */
+
+
+/* ========================================================================= *\
+   Integer conversion functions
+\* ========================================================================= */
+
 /*
    SFN   signed function
    UFN   unsigned function
@@ -143,7 +833,7 @@ const uint8_t digit_value[256] = { 64,64,64,64, 64,64,64,64, 64,64,64,64, 64,64,
 #else /* STR2NUM_C */
 
 /* ========================================================================= *\
-   Implementation of conversion functions
+   Implementation of integer conversion functions
 \* ========================================================================= */
 
 /* ------------------------------------------------------------------------- *\
@@ -246,7 +936,7 @@ UT UFN(r_str2) (const char * ps, char ** pe, int base, int * perr)
          if(((uint8_t) base > digit_value[(uint8_t) *(ps+1)]) || (u_ret > max) || ((u_ret * base) > (U_MAX - d)))
          {
             err   = ERANGE; /* indicate overflow error */
-#if 0
+#if S2N_UMIN_IS_SMIN
             /* This does not match POSIX standard that allows return of U_MAX only. :o( */
 
             if (sign < 0)
@@ -273,7 +963,7 @@ UT UFN(r_str2) (const char * ps, char ** pe, int base, int * perr)
 
    if (sign < 0)
    {
-#if 0
+#if S2N_UMIN_IS_SMIN
       /* This does not match POSIX standard that demands a negation. :o( */
 
       if(u_ret > ((U_MAX >> 1) + 1))

@@ -37,24 +37,53 @@ standards and support the common numeric bases between 2 and 36.
 
 Adding the support of other signed or unsigned integer types is very trivial
 because the implementation only requires some few macros for the types and
-their limits and a subsequent recusive include of str2num.c that acts like
-a template.
+their limits and a subsequent recursive include of str2num.c that acts like
+a template as well.
 
-The implementations uses the zlib license for allowing the integration in
-nearly all compilers and professional software.
-Only the little test and benchmark program script bench_str2num.c uses the
-a little more resticting "Civil Usage Public License" however.
+There are a bunch of functions for reading floating point numbers of different
+numeric bases from a string in the format that callback_printf uses where the
+exponent of numeric bases higher than 15 starts after a preceeding tilde '~'
+instead of an 'e' and is always of the same numeric base as the mantissa.
+The numeric format of the %a printf output where the mantisse is hexadecimal
+and the exponent is for a base 2 mantissa but given decimal after a 'p' is
+supported as well. There are
 
-Please leave a star once you like this little project and have a look at my
-time API functions in https://github.com/klux21/limitless_times which provide
-truly fast, portable and an easy to use time and timezone handling functions.
-Also the portable sprintf wrappers at
-https://github.com/klux21/callback_printf are worth a look. Once you have
-ever dealt with multiple platforms then you should know the advantages of a
-solid base that you can count on. It's the mass of little problems that steal
-your time and drain power and rarely the big tasks that seem just a simple
-work to be done usually.
- 
+long double r_str2ld (const char * psrc, char ** pend, int base, int * perr);
+double      r_str2d  (const char * psrc, char ** pend, int base, int * perr);
+
+and some wrappers of strtof, strtod and strtold which are using those
+
+long double str2ld (const char * psrc, char ** pend);
+double      str2d  (const char * psrc, char ** pend);
+float       str2f  (const char * psrc, char ** pend);
+
+The mantissa of dual and hexadecimal numbers must be prefixed with 0b or 0x
+for an automatic recognition of the base where you can't specify the base as
+an argument. For r_str2d and r_str2ld are handling it the same way if the base
+is set to 0.
+
+Because of the generic calculations the mantissa of the returned numbers may
+slightly deviate in the least significant digits from the one the exact value
+if the numeric base of the value is not a power of 2. Denormalized numbers as
+well as infinity and NaN are supported according to the C standard.
+The code doesn't depend on an additional math library but the code is pretty
+new and functions are not yet much tested beside of the bunch tests in
+bench_str2num.c .
+
+This code uses the zlib license that allows a the free integration in common
+compilers and professional software. The little test and benchmark program
+(or script) bench_str2num.c uses the "Civil Usage Public License" however just
+as callback_printf which is used for generating the strings in the tests.
+
+Once you like this little project and have a look at my time API functions
+https://github.com/klux21/limitless_times which provide truly fast, portable
+and an easy to use time and timezone handling functions and the portable
+sprintf wrappers at https://github.com/klux21/callback_printf too. Once you
+have ever dealt with multiple platforms then you should know the advantages of
+a solid base that you can count on. It's the mass of little problems that steal
+your time and drain power and rarely the big tasks that seem just a trivial
+thing to be done until the problems that bunch of forgotten details start.
+
 Kind regards,
 
 Klaus Lux

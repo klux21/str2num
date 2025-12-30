@@ -42,6 +42,16 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#ifndef S2N_UMIN_IS_SMIN
+/* S2N_UMIN_IS_SMIN is nonzero then the minumum negative value that is accepted for
+   unsigned values equals the minimum value of signed values to ensure a valid sign bit
+   to be kept. It very hard for applications to recognize a value as a negative one if
+   the sign bit is lost and it's even more hard to deal with errors because of that.
+   However the recent Unix standard specifies the functions that way and common compilers
+   do implement stroul that way ... :o( */
+#define S2N_UMIN_IS_SMIN 0
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -92,6 +102,23 @@ unsigned long str2ul   (const char * ps, char ** pe, int base);
 unsigned long long r_str2ull (const char * ps, char ** pe, int base, int * perr);
          long long str2ll    (const char * ps, char ** pe, int base);
 unsigned long long str2ull   (const char * ps, char ** pe, int base);
+
+
+/* r_str2ld reads a long double from a string and cares about a specified base. */
+long double r_str2ld (const char * psrc, char ** pend, int base, int * perr);
+
+/* r_str2d reads a double from a string and cares about a specified base. */
+double      r_str2d  (const char * psrc, char ** pend, int base, int * perr);
+
+/* str2ld is a wrapper for strtold that calls r_str2d for reading long doubles. */
+long double str2ld   (const char * psrc, char ** pend);
+
+/* str2d is a wrapper for strtod that calls r_str2d for reading doubles. */
+double      str2d    (const char * psrc, char ** pend);
+
+/* str2f is a wrapper for strtof that calls r_str2d for reading floats. */
+float       str2f    (const char * psrc, char ** pend);
+
 
 #ifdef __cplusplus
 }/* extern "C" */

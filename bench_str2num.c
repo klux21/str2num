@@ -468,6 +468,688 @@ int test_str2value()
    return (bRet);
 } /* int test_str2value */
 
+int run_float_tests()
+{
+   int iret = 0;
+
+   time_t t0 = TimeStamp();
+   time_t t1 = TimeStamp();
+   int64_t i;
+   int e0;
+   int e1;
+   double d0;
+   double d1;
+   long double ld0;
+   long double ld1;
+   char * ps;
+   char * pe;
+   char * pr;
+   char buf[128][256];
+
+   static uint32_t i_inf   = 0x7f800000;
+   static uint32_t i_ninf  = 0xff800000;
+   static uint32_t i_nan   = 0x7fc00000;
+   static uint32_t i_nnan  = 0xffc00000;
+   static const void * const pvinf  = &i_inf;
+   static const void * const pvninf = &i_ninf;
+   static const void * const pvnan  = &i_nan;
+   static const void * const pvnnan = &i_nnan;
+   float inf  = *(float*) pvinf;
+   float ninf = *(float*) pvninf;
+   float nan  = *(float*) pvnan;
+   float nnan = *(float*) pvnnan;
+
+   i = 128;
+   while (i--)
+   {
+      d1 = (double) (-i*i+3333) / ((double) i*i*i*i*i + 7.0);
+      ssprintf(&buf[i][0], "%.14e", d1);
+   }
+
+   i  = 1000000;
+   t0 = TimeStamp();
+   while (i--)
+      d0 = str2d(buf[i&0x7f], NULL);
+
+   t1 = TimeStamp() - t0;
+   sfprintf(stdout, "An average _____ str2d() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+
+   i  = 1000000;
+   t0 = TimeStamp();
+   while (i--)
+      d1 = strtod(buf[i&0x7f], NULL);
+   t1 = TimeStamp() - t0;
+   sfprintf(stdout, "An average ____ strtod() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+
+   i  = 128;
+   while (i--)
+   {
+      ps = buf[i&0x7f];
+      errno = 0;
+      d0 = str2d(ps, &pe);
+      e0 = errno;
+      errno = 0;
+      d1 = strtod(ps, &pr);
+      e1 = errno;
+      
+      if ((((d0 - d1) / d1) < -1e-15) || (((d0 - d1) / d1) > 1e-15))
+      {
+         sfprintf(stderr, "%d: Return values of strtod() and str2d() differ for '%s'! (%.16a != %.16a)\n",
+                  __LINE__, ps, d1, d0);
+      }
+
+      if(pe != pr)
+      {
+         sfprintf(stderr, "%d: The returned endpointer strtod() and str2d() differ for '%s'! "
+                  "('%.16s' != '%.16s', scan '%.*s' != '%.*s')\n", __LINE__, ps, pr, pe, (int)(pr-ps), ps, (int)(pe-ps), ps);
+      }
+
+      if (e0 != e1)
+      {
+         sfprintf(stderr, "%d: Return errno of strtod() and str2d() differ for '%s'! (%d (%s) != %d (%s))\n",
+                  __LINE__, ps, e1, strerror(e1), e0, strerror(e0));
+      }
+   }
+
+   /* --------------------------------------------------------------------- */
+
+   i=0;
+   strcpy(&buf[i++][0], "   +1.594561e-317");
+   strcpy(&buf[i++][0], "   +1.5945612300000000e+308");
+   strcpy(&buf[i++][0], "    +9.894561230000000e-307");
+   strcpy(&buf[i++][0], "    +9.894561230000000e+307");
+   strcpy(&buf[i++][0], "   +1.594561e5189 ");
+   strcpy(&buf[i++][0], "   +1.594561e-5189 ");
+   strcpy(&buf[i++][0], "    +1.5 ");
+   strcpy(&buf[i++][0], "    -1.5 ");
+   strcpy(&buf[i++][0], "    +0.5 ");
+   strcpy(&buf[i++][0], "    -0.5 ");
+   strcpy(&buf[i++][0], "    +1. ");
+   strcpy(&buf[i++][0], "    -1. ");
+   strcpy(&buf[i++][0], "    +0. ");
+   strcpy(&buf[i++][0], "    -0. ");
+   strcpy(&buf[i++][0], "    +1.e-5 ");
+   strcpy(&buf[i++][0], "    -1.e-5 ");
+   strcpy(&buf[i++][0], "    +0.e-5 ");
+   strcpy(&buf[i++][0], "    -0.e-5 ");
+   strcpy(&buf[i++][0], "    +0.25e-5 ");
+   strcpy(&buf[i++][0], "    -0.25e-5 ");
+   strcpy(&buf[i++][0], "    +1.e5 ");
+   strcpy(&buf[i++][0], "    -1.e5 ");
+   strcpy(&buf[i++][0], "    +0.e5 ");
+   strcpy(&buf[i++][0], "    -0.e5 ");
+   strcpy(&buf[i++][0], "    +1.5e ");
+   strcpy(&buf[i++][0], "    -1.5e ");
+   strcpy(&buf[i++][0], "    +1.5e2 ");
+   strcpy(&buf[i++][0], "    -1.5e2 ");
+   strcpy(&buf[i++][0], "    +0.e5e7 ");
+   strcpy(&buf[i++][0], "    -0.e5e-3 ");
+   strcpy(&buf[i++][0], "    +7..e5e7 ");
+   strcpy(&buf[i++][0], "    -7..e5e-3 ");
+   strcpy(&buf[i++][0], "    ");
+   strcpy(&buf[i++][0], " abx ");
+
+#ifndef _WIN32
+   strcpy(&buf[i++][0], "   +1.594561e-318");
+   strcpy(&buf[i++][0], "   +inf ");
+   strcpy(&buf[i++][0], "   -inf ");
+   strcpy(&buf[i++][0], "    inf ");
+   strcpy(&buf[i++][0], "   +infinity ");
+   strcpy(&buf[i++][0], "   -infinity ");
+   strcpy(&buf[i++][0], "   infinity ");
+#endif
+
+   while (i--)
+   {
+      ps = buf[i];
+      errno = 0;
+      d0 = str2d(ps, &pe);
+      e0 = errno;
+      errno = 0;
+      d1 = strtod(ps, &pr);
+      e1 = errno;
+
+      if ((((d0 - d1) / d1) < -1e-14) || (((d0 - d1) / d1) > 1e-14))
+      {
+         sfprintf(stderr, "%d: Return values of strtod() and str2d() differ for '%s'! (%.16a != %.16a)\n",
+                  __LINE__, ps, d1, d0);
+      }
+
+      if(pe != pr)
+      {
+         sfprintf(stderr, "%d, The returned endpointer strtod() and str2d() differ for '%s'! "
+                  "('%.16s' != '%.16s', scan '%.*s' != '%.*s')\n", __LINE__, ps, pr, pe, (int)(pr-ps), ps, (int)(pe-ps), ps);
+      }
+
+      if (e0 != e1)
+      {
+         // sfprintf(stderr, "%d: Return errno of strtod() and str2d() differ for '%s'! (%d (%s) != %d (%s))\n", __LINE__, ps, e1, strerror(e1), e0, strerror(e0));
+      }
+
+      if((d0 == 0.0) || (d0 == (double) inf) || (d0 == (double) ninf))
+      {
+         //    sfprintf(stderr, "%d: Return value of str2d() for '%s' is %f!\n", __LINE__, ps, d0);
+      }
+   }
+   /* --------------------------------------------------------------------- */
+
+   i = 128;
+   while (i--)
+   {
+      d1 = (double) (-i*i+3333) / ((double) i*i*i*i*i + 7.0);
+      ssprintf(&buf[i][0], "%.14a", d1 );
+   }
+
+   i  = 128;
+   while (i--)
+   {
+      ps = buf[i&0x7f];
+      d0 = str2d(ps, &pe);
+      d1 = (double) (-i*i+3333) / ((double) i*i*i*i*i + 7.0);
+
+      if (d0 != d1)
+      {
+         sfprintf(stderr, "%d: Return values of strtod() and str2d() differ for '%s'! (%.16a != %.16a)\n",
+                  __LINE__, ps, d1, d0);
+      }
+
+#ifndef _WIN32
+      d1 = strtod(ps, &pr);
+      if(pe != pr)
+      {
+         sfprintf(stderr, "%d, The returned endpointer strtod() and str2d() differ for '%s'! "
+                  "('%.16s' != '%.16s', scan '%.*s' != '%.*s')\n", __LINE__, ps, pr, pe, (int)(pr-ps), ps, (int)(pe-ps), ps);
+      }
+#endif
+   }
+
+   /* --------------------------------------------------------------------- */
+
+   i = 128;
+   while (i--)
+   {
+      d1 = (double) (-i*i+3333) / ((double) i*i*i*i*i + 7.0);
+      ssprintf(&buf[i][0], "%.14A", d1 );
+   }
+
+   i  = 128;
+   while (i--)
+   {
+      ps = buf[i&0x7f];
+      d0 = str2d(ps, &pe);
+      d1 = (double) (-i*i+3333) / ((double) i*i*i*i*i + 7.0);
+
+      if (d0 != d1)
+      {
+         sfprintf(stderr, "%d: Return values of strtod() and str2d() differ for '%s'! (%.16a != %.16a)\n",
+                  __LINE__, ps, d1, d0);
+      }
+#ifndef _WIN32
+      d1 = strtod(ps, &pr);
+      if(pe != pr)
+      {
+         sfprintf(stderr, "%d: The returned endpointer strtod() and str2d() differ for '%s'! "
+                  "('%.16s' != '%.16s', scan '%.*s' != '%.*s')\n", __LINE__, ps, pr, pe, (int)(pr-ps), ps, (int)(pe-ps), ps);
+      }
+#endif
+   }
+
+   /* --------------------------------------------------------------------- */
+
+   i = 128;
+   while (i--)
+   {
+      d1 = (double) (-i*i+3333) / ((double) i*i*i*i*i + 7.0);
+      ssprintf(&buf[i][0], "%#.64r2e", d1);
+   }
+
+   i  = 128;
+   while (i--)
+   {
+      ps = buf[i&0x7f];
+      d0 = str2d(ps, &pe);
+      d1 = (double) (-i*i+3333) / ((double) i*i*i*i*i + 7.0);
+
+      if (d0 != d1)
+      {
+         sfprintf(stderr, "%d: Unexpected return value of str2d() '%s'! (%.16a != %.16a)\n",
+                  __LINE__, ps, d0, d1);
+      }
+   }
+
+   /* --------------------------------------------------------------------- */
+
+   i = 128;
+   while (i--)
+   {
+      d1 = (double) (-i*i+3333) / ((double) i*i*i*i*i + 7.0);
+      ssprintf(&buf[i][0], "%#.64r2E", d1);
+   }
+
+   i  = 128;
+   while (i--)
+   {
+      ps = buf[i&0x7f];
+      d0 = str2d(ps, &pe);
+      d1 = (double) (-i*i+3333) / ((double) i*i*i*i*i + 7.0);
+
+      if (d0 != d1)
+      {
+         sfprintf(stderr, "%d: Unexpected return value of str2d() '%s'! (%.16a != %.16a)\n",
+                  __LINE__, ps, d0, d1);
+      }
+   }
+
+   /* --------------------------------------------------------------------- */
+
+   i = 128;
+   while (i--)
+   {
+      d1 = (double) (-i*i+3333) / ((double) i*i*i*i*i + 7.0);
+      ssprintf(&buf[i][0], "%#.16r1e", d1);
+   }
+
+   i  = 128;
+   while (i--)
+   {
+      ps = buf[i&0x7f];
+      d0 = str2d(ps, &pe);
+      d1 = (double) (-i*i+3333) / ((double) i*i*i*i*i + 7.0);
+
+      if (d0 != d1)
+      {
+         sfprintf(stderr, "%d: Unexpected return value of str2d() '%s'! (%.16a != %.16a)\n",
+                  __LINE__, ps, d0, d1);
+      }
+   }
+
+   /* --------------------------------------------------------------------- */
+
+   i = 128;
+   while (i--)
+   {
+      d1 = (double) (-i*i+3333) / ((double) i*i*i*i*i + 7.0);
+      ssprintf(&buf[i][0], "%#.16r1E", d1);
+   }
+
+   i  = 128;
+   while (i--)
+   {
+      ps = buf[i&0x7f];
+      d0 = str2d(ps, &pe);
+      d1 = (double) (-i*i+3333) / ((double) i*i*i*i*i + 7.0);
+
+      if (d0 != d1)
+      {
+         sfprintf(stderr, "%d: Unexpected return value of str2d() '%s'! (%.16a != %.16a)\n",
+                  __LINE__, ps, d0, d1);
+      }
+   }
+
+   /* --------------------------------------------------------------------- */
+
+   i = 128;
+   while (i--)
+   {
+      d1 = (double) (-i*i+3333) / ((double) i*i*i*i*i + 7.0);
+      ssprintf(&buf[i][0], "%.16r*E", 32, d1);
+   }
+
+   i  = 128;
+   while (i--)
+   {
+      ps = buf[i&0x7f];
+      d0 = r_str2d(ps, &pe, 32, NULL);
+      d1 = (double) (-i*i+3333) / ((double) i*i*i*i*i + 7.0);
+
+      if (d1 != d0)
+      {
+         sfprintf(stderr, "%d: Unexpected return value of str2d() '%s'! (%.16a != %.16a)\n",
+                  __LINE__, ps, d0, d1);
+      }
+   }
+
+   /* ===================================================================== */
+
+   i = 128;
+   while (i--)
+   {
+      ld1 = (long double) (-i*i+3333) / ((long double) i*i*i*i*i + 7.0);
+      ssprintf(&buf[i][0], "%.20Le", ld1);
+   }
+
+   i  = 1000000;
+   t0 = TimeStamp();
+   while (i--)
+      ld0 = str2ld(buf[i&0x7f], NULL);
+
+   t1 = TimeStamp() - t0;
+   sfprintf(stdout, "An average ____ str2ld() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+
+   i  = 1000000;
+   t0 = TimeStamp();
+   while (i--)
+#ifdef _WIN32
+      ld1 = strtod(buf[i&0x7f], NULL);
+#else
+      ld1 = strtold(buf[i&0x7f], NULL);
+#endif
+   t1 = TimeStamp() - t0;
+   sfprintf(stdout, "An average ___ strtold() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+
+   i  = 128;
+   while (i--)
+   {
+      ps = buf[i&0x7f];
+      errno = 0;
+      ld0 = str2ld(ps, &pe);
+      e0 = errno;
+      errno = 0;
+
+#ifdef _WIN32
+      ld1 = strtod(ps, &pr);
+      e1 = errno;
+      if ((((ld0 - ld1) / ld1) < -1e-15) || (((ld0 - ld1) / ld1) > 1e-15))
+#else
+      ld1 = strtold(ps, &pr);
+      e1 = errno;
+      if ((((ld0 - ld1) / ld1) < -1e-18) || (((ld0 - ld1) / ld1) > 1e-18))
+#endif
+      {
+         sfprintf(stderr, "%d: Return values of strtold() and str2ld() differ for '%s'! ( %.32La != %.32La )\n",
+                 __LINE__, ps, ld1, ld0);
+      }
+
+      if(pe != pr)
+      {
+         sfprintf(stderr, "%d: The returned endpointer strtold() and str2ld() differ for '%s'! "
+                  "('%.20s' != '%.20s', scan '%.*s' != '%.*s')\n", __LINE__, ps, pr, pe, (int)(pr-ps), ps, (int)(pe-ps), ps);
+      }
+
+      if (e0 != e1)
+      {
+         sfprintf(stderr, "%d: Return errno of strtold() and str2ld() differ for '%s'! (%d (%s) != %d (%s))\n",
+                  __LINE__, ps, e1, strerror(e1), e0, strerror(e0));
+      }
+   }
+
+   /* --------------------------------------------------------------------- */
+
+   i=0;
+   strcpy(&buf[i++][0], "   +1.594561e-317          ");
+   strcpy(&buf[i++][0], "   +1.5945612300000000e+308");
+   strcpy(&buf[i++][0], "    +9.894561230000000e-307");
+   strcpy(&buf[i++][0], "    +9.894561230000000e+307");
+   strcpy(&buf[i++][0], "   +1.594561e5189 ");
+   strcpy(&buf[i++][0], "   +1.594561e-5189 ");
+   strcpy(&buf[i++][0], "    +1.5 ");
+   strcpy(&buf[i++][0], "    -1.5 ");
+   strcpy(&buf[i++][0], "    +0.5 ");
+   strcpy(&buf[i++][0], "    -0.5 ");
+   strcpy(&buf[i++][0], "    +1. ");
+   strcpy(&buf[i++][0], "    -1. ");
+   strcpy(&buf[i++][0], "    +0. ");
+   strcpy(&buf[i++][0], "    -0. ");
+   strcpy(&buf[i++][0], "    +1.e-5 ");
+   strcpy(&buf[i++][0], "    -1.e-5 ");
+   strcpy(&buf[i++][0], "    +0.e-5 ");
+   strcpy(&buf[i++][0], "    -0.e-5 ");
+   strcpy(&buf[i++][0], "    +0.25e-5 ");
+   strcpy(&buf[i++][0], "    -0.25e-5 ");
+   strcpy(&buf[i++][0], "    +1.e5 ");
+   strcpy(&buf[i++][0], "    -1.e5 ");
+   strcpy(&buf[i++][0], "    +0.e5 ");
+   strcpy(&buf[i++][0], "    -0.e5 ");
+   strcpy(&buf[i++][0], "    +1.5e ");
+   strcpy(&buf[i++][0], "    -1.5e ");
+   strcpy(&buf[i++][0], "    +1.5e2 ");
+   strcpy(&buf[i++][0], "    -1.5e2 ");
+   strcpy(&buf[i++][0], "    +00000000000000000000.5 ");
+   strcpy(&buf[i++][0], "    -00000000000000000000.5 ");
+   strcpy(&buf[i++][0], "    +0.0000000000000000000000000005 ");
+   strcpy(&buf[i++][0], "    -0.0000000000000000000000000005 ");
+   strcpy(&buf[i++][0], " abx ");
+
+#ifndef _WIN32
+   strcpy(&buf[i++][0], "   +1.594561e-318          ");
+   strcpy(&buf[i++][0], "   -000001.594561e-318     ");
+   strcpy(&buf[i++][0], " +7.89456123000000000e-4947");
+   strcpy(&buf[i++][0], " -7.89456123000000000e-4947");
+   strcpy(&buf[i++][0], " +7.89456123000000000e-4940");
+   strcpy(&buf[i++][0], " -7.89456123000000000e-4940");
+   strcpy(&buf[i++][0], " +7.89456123000000000e-4930");
+   strcpy(&buf[i++][0], " -7.89456123000000000e-4930");
+   strcpy(&buf[i++][0], " +7.89456123000000000e-4307");
+   strcpy(&buf[i++][0], " +7.89456123000000000e+4307");
+   strcpy(&buf[i++][0], "   +inf ");
+   strcpy(&buf[i++][0], "   -inf ");
+   strcpy(&buf[i++][0], "    inf ");
+   strcpy(&buf[i++][0], "   +infinity ");
+   strcpy(&buf[i++][0], "   -infinity ");
+   strcpy(&buf[i++][0], "   infinity ");
+#endif
+
+   while (i--)
+   {
+      ps = buf[i];
+      errno = 0;
+      ld0 = str2ld(ps, &pe);
+      e0 = errno;
+      errno = 0;
+#ifdef _WIN32
+      ld1 = strtod(ps, &pr);
+      e1 = errno;
+      if ((((ld0 - ld1) / ld1) < -1e-14) || (((ld0 - ld1) / ld1) > 1e-14))
+#else
+      ld1 = strtold(ps, &pr);
+      e1 = errno;
+      if ((((ld0 - ld1) / ld1) < -1e-17) || (((ld0 - ld1) / ld1) > 1e-17))
+#endif
+      {
+         sfprintf(stderr, "%d: Return values of strtold() and str2ld() differ for '%s'! ( % .32La != % .32La )\n",
+                 __LINE__, ps, ld1, ld0);
+      }
+
+      if(pe != pr)
+      {
+         sfprintf(stderr, "%d: The returned endpointer strtold() and str2ld() differ for '%s'! "
+                  "('%.20s' != '%.20s', scan '%.*s' != '%.*s')\n", __LINE__, ps, pr, pe, (int)(pr-ps), ps, (int)(pe-ps), ps);
+      }
+
+      if (e0 != e1)
+      {
+         //sfprintf(stderr, "%d: Return errno of strtold() and str2ld() differ for '%s'! (%d (%s) != %d (%s))\n", __LINE__, ps, e1, strerror(e1), e0, strerror(e0));
+      }
+
+      if((ld0 == 0.0) || (ld0 == (long double) inf) || (ld0 == (long double) ninf))
+      {
+         //sfprintf(stderr, "%d: Return values of str2d() for '%s' is %Lf!\n", __LINE__, ps, ld0);
+      }
+   }
+
+   /* --------------------------------------------------------------------- */
+
+   i = 128;
+   while (i--)
+   {
+      ld1 = (long double) (-i*i+3333) / ((double) i*i*i*i*i + 7.0);
+      ssprintf(&buf[i][0], "%.32La", ld1);
+   }
+
+   i  = 128;
+   while (i--)
+   {
+      ps = buf[i&0x7f];
+      ld0 = str2ld(ps, &pe);
+      ld1 = (long double) (-i*i+3333) / ((long double) i*i*i*i*i + 7.0);
+
+      if (ld0 != ld1)
+      {
+         sfprintf(stderr, "%d: Return values of strtold() and str2ld() differ for '%s'! (%.32La != %.32La)\n",
+                  __LINE__, ps, ld1, ld0);
+      }
+
+#ifndef _WIN32
+      ld1 = strtold(ps, &pr);
+      if(pe != pr)
+      {
+         sfprintf(stderr, "%d, The returned endpointer strtold() and str2ld() differ for '%s'! "
+                  "('%.16s' != '%.16s', scan '%.*s' != '%.*s')\n", __LINE__, ps, pr, pe, (int)(pr-ps), ps, (int)(pe-ps), ps);
+      }
+#endif
+   }
+
+   /* --------------------------------------------------------------------- */
+
+   i = 128;
+   while (i--)
+   {
+      ld1 = (long double) (-i*i+3333) / ((long double) i*i*i*i*i + 7.0);
+      ssprintf(&buf[i][0], "%.32LA", ld1);
+   }
+
+   i  = 128;
+   while (i--)
+   {
+      ps = buf[i&0x7f];
+      ld0 = str2ld(ps, &pe);
+      ld1 = (long double) (-i*i+3333) / ((long double) i*i*i*i*i + 7.0);
+
+      if (ld0 != ld1)
+      {
+         sfprintf(stderr, "%d: Return values of strtod() and str2d() differ for '%s'! (%.32La != %.32La)\n",
+                  __LINE__, ps, ld1, ld0);
+      }
+
+#ifndef _WIN32
+      ld1 = strtold(ps, &pr);
+      if(pe != pr)
+      {
+         sfprintf(stderr, "%d: The returned endpointer strtold() and str2ld() differ for '%s'! "
+                  "('%.16s' != '%.16s', scan '%.*s' != '%.*s')\n", __LINE__, ps, pr, pe, (int)(pr-ps), ps, (int)(pe-ps), ps);
+      }
+#endif
+   }
+
+   /* --------------------------------------------------------------------- */
+
+   i = 128;
+   while (i--)
+   {
+      ld1 = (long double) (-i*i+3333) / ((long double) i*i*i*i*i + 7.0);
+      ssprintf(&buf[i][0], "%#.128r2Le", ld1);
+   }
+
+   i  = 128;
+   while (i--)
+   {
+      ps = buf[i&0x7f];
+      ld0 = str2ld(ps, &pe);
+      ld1 = (long double) (-i*i+3333) / ((long double) i*i*i*i*i + 7.0);
+
+      if (ld0 != ld1)
+      {
+         sfprintf(stderr, "%d: Unexpected return value of str2ld() '%s'! (%.32La != %.32La)\n",
+                  __LINE__, ps, ld0, ld1);
+      }
+   }
+
+   /* --------------------------------------------------------------------- */
+
+   i = 128;
+   while (i--)
+   {
+      ld1 = (long double) (-i*i+3333) / ((long double) i*i*i*i*i + 7.0);
+      ssprintf(&buf[i][0], "%#.128r2LE", ld1);
+   }
+
+   i  = 128;
+   while (i--)
+   {
+      ps = buf[i&0x7f];
+      ld0 = str2ld(ps, &pe);
+      ld1 = (long double) (-i*i+3333) / ((long double) i*i*i*i*i + 7.0);
+
+      if (ld1 != ld0)
+      {
+         sfprintf(stderr, "%d: Unexpected return value of str2ld() '%s'! (%.32La != %.32La)\n",
+                  __LINE__, ps, ld0, ld1);
+      }
+   }
+
+   /* --------------------------------------------------------------------- */
+
+   i = 128;
+   while (i--)
+   {
+      ld1 = (long double) (-i*i+3333) / ((long double) i*i*i*i*i + 7.0);
+      ssprintf(&buf[i][0], "%#.32r1Le", ld1);
+   }
+
+   i  = 128;
+   while (i--)
+   {
+      ps = buf[i&0x7f];
+      ld0 = str2ld(ps, &pe);
+      ld1 = (long double) (-i*i+3333) / ((long double) i*i*i*i*i + 7.0);
+
+      if (ld1 != ld0)
+      {
+         sfprintf(stderr, "%d: Unexpected return value of str2ld() '%s'! (%.32La != %.32La)\n",
+                  __LINE__, ps, ld0, ld1);
+      }
+   }
+
+   /* --------------------------------------------------------------------- */
+
+   i = 128;
+   while (i--)
+   {
+      ld1 = (long double) (-i*i+3333) / ((long double) i*i*i*i*i + 7.0);
+      ssprintf(&buf[i][0], "%#.32r1LE", ld1);
+   }
+
+   i  = 128;
+   while (i--)
+   {
+      ps = buf[i&0x7f];
+      ld0 = str2ld(ps, &pe);
+      ld1 = (long double) (-i*i+3333) / ((long double) i*i*i*i*i + 7.0);
+
+      if (ld1 != ld0)
+      {
+         sfprintf(stderr, "%d: Unexpected return value of str2ld() '%s'! (%.32La != %.32La)\n",
+                  __LINE__, ps, ld0, ld1);
+      }
+   }
+
+   /* --------------------------------------------------------------------- */
+
+   i = 128;
+   while (i--)
+   {
+      ld1 = (long double) (-i*i+3333) / ((long double) i*i*i*i*i + 7.0);
+      ssprintf(&buf[i][0], "%.32r*LE", 32, ld1);
+   }
+
+   i  = 128;
+   while (i--)
+   {
+      ps = buf[i&0x7f];
+      ld0 = r_str2ld(ps, &pe, 32, NULL);
+      ld1 = (long double) (-i*i+3333) / ((long double) i*i*i*i*i + 7.0);
+
+      if (ld1 != ld0)
+      {
+         sfprintf(stderr, "%d: Unexpected return value of str2ld() '%s'! (%.32La != %.32La)\n",
+                  __LINE__, ps, ld0, ld1);
+      }
+   }
+
+   iret = 1;
+   return (iret);
+} /* run_float_tests() */
+
 
 /* ------------------------------------------------------------------------- *\
    main function
@@ -479,6 +1161,9 @@ int main(int argc, char * argv[])
         goto Exit;
 
     if(!run_tests())
+        goto Exit;
+
+    if(!run_float_tests())
         goto Exit;
 
     iret = 0;
