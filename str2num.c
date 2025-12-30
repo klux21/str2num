@@ -79,37 +79,21 @@ static void *   pvnnan = &nnan;
    See comments of rebase() in callback_printf for details.
 \* ------------------------------------------------------------------------- */
 
-static long double powil (uint8_t base, int32_t iexpo)
+static long double powil (uint8_t base, uint32_t expo)
 {
-   struct basepows_s {long double p; int32_t e; } basepow [32];
-   struct basepows_s * pb = basepow;
+   long double dret = 1;
    long double p = base;
-   int32_t expo = 1;
 
-   while (expo <= iexpo)
+   while (expo)
    {
-      pb->e = expo;
-      pb->p = p;
-      expo += expo;
+      if (expo & 1)
+         dret *= p;
+
       p *= p;
-      ++pb;
+      expo >>= 1;
    }
-
-   expo = 0;
-   p = 1.0;
-
-   while (pb != basepow)
-   {
-      --pb;
-      if((expo + pb->e) <= iexpo)
-      {
-         p *= pb->p;
-         expo += pb->e;
-      }
-   }
-
-   return (p);
-} /* long double powil (uint8_t base, int32_t iexpo) */
+   return (dret);
+} /* long double powil (uint8_t base, uint32_t expo) */
 
 
 /* ------------------------------------------------------------------------- *\
@@ -117,37 +101,21 @@ static long double powil (uint8_t base, int32_t iexpo)
    See comments of rebase() in callback_printf.c for details.
 \* ------------------------------------------------------------------------- */
 
-static double powi (uint8_t base, int32_t iexpo)
+static double powi (uint8_t base, uint32_t expo)
 {
-   struct basepows_s {  double p; int32_t e; } basepow [20];
-   struct basepows_s * pb = basepow;
+   double dret = 1;
    double p = base;
-   int32_t expo = 1;
 
-   while (expo <= iexpo)
+   while (expo)
    {
-      pb->e = expo;
-      pb->p = p;
-      expo += expo;
+      if (expo & 1)
+         dret *= p;
+
       p *= p;
-      ++pb;
+      expo >>= 1;
    }
-
-   expo = 0;
-   p = 1.0;
-
-   while (pb != basepow)
-   {
-      --pb;
-      if((expo + pb->e) <= iexpo)
-      {
-         p *= pb->p;
-         expo += pb->e;
-      }
-   }
-
-   return (p);
-} /* double powi (uint8_t base, int32_t iexpo) */
+   return (dret);
+} /* double powi (uint8_t base, int32_t expo) */
 
 
 /* ------------------------------------------------------------------------- *\
