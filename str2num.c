@@ -81,7 +81,7 @@ static void *   pvnnan = &nnan;
 
 static long double powil (uint8_t base, uint32_t expo)
 {
-   long double val = 1;
+   long double val = 1.0;
    long double p   = base;
 
    if (expo)
@@ -112,7 +112,7 @@ static long double powil (uint8_t base, uint32_t expo)
 
 static double powi (uint8_t base, uint32_t expo)
 {
-   double val = 1;
+   double val = 1.0;
    double p   = base;
 
    if (expo)
