@@ -8,7 +8,7 @@
 *                                                                             *
 * --------------------------------------------------------------------------- *
 *                                                                             *
-*  COPYRIGHT :   (c) 2025 Dipl.-Ing. Klaus Lux (Aachen, Germany)              *
+*  COPYRIGHT :   (c) 2026 Dipl.-Ing. Klaus Lux (Aachen, Germany)              *
 *                                                                             *
 * --------------------------------------------------------------------------- *
 *                                                                             *
@@ -110,7 +110,7 @@ long double r_str2ld (const char * psrc, char ** pend, int base, int * perr);
 /* r_str2d reads a double from a string and cares about a specified base. */
 double      r_str2d  (const char * psrc, char ** pend, int base, int * perr);
 
-/* str2ld is a wrapper for strtold that calls r_str2d for reading long doubles. */
+/* str2ld is a wrapper for strtold that calls r_str2ld for reading long doubles. */
 long double str2ld   (const char * psrc, char ** pend);
 
 /* str2d is a wrapper for strtod that calls r_str2d for reading doubles. */

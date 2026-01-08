@@ -15,7 +15,7 @@ exit $?
 *                                                                             *
 * --------------------------------------------------------------------------- *
 *                                                                             *
-*  COPYRIGHT:     (c) 2025 Dipl.-Ing. Klaus Lux (Aachen, Germany)             *
+*  COPYRIGHT:     (c) 2026 Dipl.-Ing. Klaus Lux (Aachen, Germany)             *
 *                                                                             *
 * --------------------------------------------------------------------------- *
 *                                                                             *
@@ -531,7 +531,7 @@ int run_float_tests()
       errno = 0;
       d1 = strtod(ps, &pr);
       e1 = errno;
-      
+
       if ((((d0 - d1) / d1) < -1e-15) || (((d0 - d1) / d1) > 1e-15))
       {
          sfprintf(stderr, "%d: Return values of strtod() and str2d() differ for '%s'! (%.16a != %.16a)\n",
