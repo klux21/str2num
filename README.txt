@@ -66,9 +66,8 @@ Because of the generic calculations the mantissa of the returned numbers may
 slightly deviate in the least significant digits from the one the exact value
 if the numeric base of the value is not a power of 2. Denormalized numbers as
 well as infinity and NaN are supported according to the C standard.
-The code doesn't depend on an additional math library but the code is pretty
-new and functions are not yet much tested beside of the bunch tests in
-bench_str2num.c .
+The code doesn't depend on the math library but the code is pretty new and the
+functions are not yet much tested beside of the tests in bench_str2num.c .
 
 This code uses the zlib license that allows a the free integration in common
 compilers and professional software. The little test and benchmark program
