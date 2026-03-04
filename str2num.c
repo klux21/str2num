@@ -95,7 +95,7 @@ static long double powil (uint8_t base, uint32_t expo)
       {
          p *= p;
 
-         if (p >= 0xffffffff)
+         if (p > 0xffffffff)
          {
             long double fp = p;
 
@@ -146,7 +146,7 @@ static double powi (uint8_t base, uint32_t expo)
       {
          p *= p;
 
-         if (p >= 0xffffffff)
+         if (p > 0xffffffff)
          {
             double fp = p;
 
