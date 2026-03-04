@@ -82,23 +82,43 @@ static void *   pvnnan = &nnan;
 static long double powil (uint8_t base, uint32_t expo)
 {
    long double val = 1.0;
-   long double p   = base;
 
    if (expo)
    {
-      if (expo & 1)
-          val = p;
+      uint64_t v = 1;
+      uint64_t p = base;
 
-      expo >>= 1;
-      while (expo)
+      if (expo & 1)
+         v = p;
+
+      while (expo >>= 1)
       {
          p *= p;
 
-         if (expo & 1)
-            val *= p;
+         if (p >= 0xffffffff)
+         {
+            long double fp = p;
 
-         expo >>= 1;
+            if (expo & 1)
+               val = fp * v;
+            else
+               val = v;
+
+            while(expo >>= 1)
+            {
+               fp *= fp;
+
+               if (expo & 1)
+                  val *= fp;
+            }
+            return (val);
+         }
+
+         if (expo & 1)
+            v *= p;
       }
+
+      val = v;
    }
 
    return (val);
@@ -113,23 +133,43 @@ static long double powil (uint8_t base, uint32_t expo)
 static double powi (uint8_t base, uint32_t expo)
 {
    double val = 1.0;
-   double p   = base;
 
    if (expo)
    {
-      if (expo & 1)
-          val = p;
+      uint64_t v = 1;
+      uint64_t p = base;
 
-      expo >>= 1;
-      while (expo)
+      if (expo & 1)
+         v = p;
+
+      while (expo >>= 1)
       {
          p *= p;
 
-         if (expo & 1)
-            val *= p;
+         if (p >= 0xffffffff)
+         {
+            double fp = p;
 
-         expo >>= 1;
+            if (expo & 1)
+               val = fp * v;
+            else
+               val = v;
+
+            while(expo >>= 1)
+            {
+               fp *= fp;
+
+               if (expo & 1)
+                  val *= fp;
+            }
+            return (val);
+         }
+
+         if (expo & 1)
+            v *= p;
       }
+
+      val = v;
    }
 
    return (val);
@@ -383,6 +423,10 @@ long double r_str2ld(const char * psrc, char ** pend, int base, int * perr)
    if(e >= 0)
    {
       dret = ((long double) m1 * 0x400000000000000ll + m0) * powil(base, e);
+   }
+   else if(e > -308)
+   {
+      dret = ((long double) m1 * 0x400000000000000ll + m0) / powil(base, -e);
    }
    else
    {  /* Try to prevent a possible overflow within powil */
@@ -670,6 +714,10 @@ double r_str2d(const char * psrc, char ** pend, int base, int * perr)
    if(e >= 0)
    {
       dret = (double) m * powi(base, e);
+   }
+   else if(e > -308)
+   {
+      dret = (double) m / powi(base, -e);
    }
    else
    {  /* Try to prevent a possible overflow within powi */
