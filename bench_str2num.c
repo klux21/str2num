@@ -209,6 +209,13 @@ int run_tests()
    t1 = TimeStamp() - t0;
    sfprintf(stdout, "An average ____ strtol() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
+   i  = 1000000;
+   t0 = TimeStamp();
+   while (i--)
+      ol = atol(ps + (i&7));
+   t1 = TimeStamp() - t0;
+   sfprintf(stdout, "An average ______ atol() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+
    i  = 100000;
    while (i--)
    {
