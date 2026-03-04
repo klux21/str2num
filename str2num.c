@@ -424,10 +424,6 @@ long double r_str2ld(const char * psrc, char ** pend, int base, int * perr)
    {
       dret = ((long double) m1 * 0x400000000000000ll + m0) * powil(base, e);
    }
-   else if(e > -308)
-   {
-      dret = ((long double) m1 * 0x400000000000000ll + m0) / powil(base, -e);
-   }
    else
    {  /* Try to prevent a possible overflow within powil */
       long double p;
@@ -714,10 +710,6 @@ double r_str2d(const char * psrc, char ** pend, int base, int * perr)
    if(e >= 0)
    {
       dret = (double) m * powi(base, e);
-   }
-   else if(e > -308)
-   {
-      dret = (double) m / powi(base, -e);
    }
    else
    {  /* Try to prevent a possible overflow within powi */
