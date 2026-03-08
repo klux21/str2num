@@ -59,8 +59,8 @@ float       str2f  (const char * psrc, char ** pend);
 
 The mantissa of dual and hexadecimal numbers must be prefixed with 0b or 0x
 for an automatic recognition of the base where you can't specify the base as
-an argument. For r_str2d and r_str2ld are handling it the same way if the base
-is set to 0.
+an argument. r_str2d and r_str2ld are doing an automatic base recognition if
+the base is set to 0.
 
 Because of the generic calculations the mantissa of the returned numbers may
 slightly deviate in the least significant digits from the one the exact value
