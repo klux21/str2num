@@ -191,9 +191,9 @@ int run_tests()
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
-      nl = r_str2l(ps + (i&7), NULL, 0, NULL);
+      nl = str2l_r(ps + (i&7), NULL, 0, NULL);
    t1 = TimeStamp() - t0;
-   sfprintf(stdout, "An average ___ r_str2l() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+   sfprintf(stdout, "An average ___ str2l_r() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 1000000;
    t0 = TimeStamp();
@@ -240,9 +240,9 @@ int run_tests()
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
-      nll = r_str2ll(ps + (i&15), NULL, 0, NULL);
+      nll = str2ll_r(ps + (i&15), NULL, 0, NULL);
    t1 = TimeStamp() - t0;
-   sfprintf(stdout, "An average __ r_str2ll() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+   sfprintf(stdout, "An average __ str2ll_r() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 1000000;
    t0 = TimeStamp();
@@ -282,9 +282,9 @@ int run_tests()
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
-      nlu = r_str2ul(ps + (i&7), NULL, 0, NULL);
+      nlu = str2ul_r(ps + (i&7), NULL, 0, NULL);
    t1 = TimeStamp() - t0;
-   sfprintf(stdout, "An average __ r_str2ul() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+   sfprintf(stdout, "An average __ str2ul_r() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 1000000;
    t0 = TimeStamp();
@@ -324,9 +324,9 @@ int run_tests()
    i  = 1000000;
    t0 = TimeStamp();
    while (i--)
-      nllu = r_str2ull(ps + (i&15), NULL, 0, NULL);
+      nllu = str2ull_r(ps + (i&15), NULL, 0, NULL);
    t1 = TimeStamp() - t0;
-   sfprintf(stdout, "An average _ r_str2ull() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
+   sfprintf(stdout, "An average _ str2ull_r() call took %ld.%.6ld us\n", (long)(t1 / 1000000), (long)(t1 % 1000000));
 
    i  = 1000000;
    t0 = TimeStamp();
@@ -495,16 +495,16 @@ int run_float_tests()
 
    static uint32_t i_inf   = 0x7f800000;
    static uint32_t i_ninf  = 0xff800000;
-   static uint32_t i_nan   = 0x7fc00000;
-   static uint32_t i_nnan  = 0xffc00000;
+   /* static uint32_t i_nan   = 0x7fc00000; */
+   /* static uint32_t i_nnan  = 0xffc00000; */
    static const void * const pvinf  = &i_inf;
    static const void * const pvninf = &i_ninf;
-   static const void * const pvnan  = &i_nan;
-   static const void * const pvnnan = &i_nnan;
+   /* static const void * const pvnan  = &i_nan; */
+   /* static const void * const pvnnan = &i_nnan; */
    float inf  = *(float*) pvinf;
    float ninf = *(float*) pvninf;
-   float nan  = *(float*) pvnan;
-   float nnan = *(float*) pvnnan;
+   /* float nan  = *(float*) pvnan; */
+   /* float nnan = *(float*) pvnnan; */
 
    i = 128;
    while (i--)
@@ -806,7 +806,7 @@ int run_float_tests()
    while (i--)
    {
       ps = buf[i&0x7f];
-      d0 = r_str2d(ps, &pe, 32, NULL);
+      d0 = str2d_r(ps, &pe, 32, NULL);
       d1 = (double) (-i*i+3333) / ((double) i*i*i*i*i + 7.0);
 
       if (d1 != d0)
@@ -1143,7 +1143,7 @@ int run_float_tests()
    while (i--)
    {
       ps = buf[i&0x7f];
-      ld0 = r_str2ld(ps, &pe, 32, NULL);
+      ld0 = str2ld_r(ps, &pe, 32, NULL);
       ld1 = (long double) (-i*i+3333) / ((long double) i*i*i*i*i + 7.0);
 
       if (ld1 != ld0)
