@@ -63,52 +63,57 @@ extern const uint8_t digit_value[256];
    All functions return the minimum or maximum value of the integer type in case of overflows.  
    The r_* variants are reentrant save and return errors in *perr instead in errno. */
 
- int64_t r_str2i64 (const char * ps, char ** pe, int base, int * perr);
-uint64_t r_str2u64 (const char * ps, char ** pe, int base, int * perr);
+ int64_t str2i64_r (const char * ps, char ** pe, int base, int * perr);
+uint64_t str2u64_r (const char * ps, char ** pe, int base, int * perr);
  int64_t str2i64   (const char * ps, char ** pe, int base);
 uint64_t str2u64   (const char * ps, char ** pe, int base);
 
- int32_t r_str2i32 (const char * ps, char ** pe, int base, int * perr);
-uint32_t r_str2u32 (const char * ps, char ** pe, int base, int * perr);
+ int32_t str2i32_r (const char * ps, char ** pe, int base, int * perr);
+uint32_t str2u32_r (const char * ps, char ** pe, int base, int * perr);
  int32_t str2i32   (const char * ps, char ** pe, int base);
 uint32_t str2u32   (const char * ps, char ** pe, int base);
 
- int16_t r_str2i16 (const char * ps, char ** pe, int base, int * perr);
-uint16_t r_str2u16 (const char * ps, char ** pe, int base, int * perr);
+ int16_t str2i16_r (const char * ps, char ** pe, int base, int * perr);
+uint16_t str2u16_r (const char * ps, char ** pe, int base, int * perr);
  int16_t str2i16   (const char * ps, char ** pe, int base);
 uint16_t str2u16   (const char * ps, char ** pe, int base);
 
- int8_t r_str2i8 (const char * ps, char ** pe, int base, int * perr);
-uint8_t r_str2u8 (const char * ps, char ** pe, int base, int * perr);
- int8_t str2i8   (const char * ps, char ** pe, int base);
-uint8_t str2u8   (const char * ps, char ** pe, int base);
+ int8_t  str2i8_r  (const char * ps, char ** pe, int base, int * perr);
+uint8_t  str2u8_r  (const char * ps, char ** pe, int base, int * perr);
+ int8_t  str2i8    (const char * ps, char ** pe, int base);
+uint8_t  str2u8    (const char * ps, char ** pe, int base);
 
-ptrdiff_t r_str2sz (const char * ps, char ** pe, int base, int * perr);
-size_t    r_str2uz (const char * ps, char ** pe, int base, int * perr);
-ptrdiff_t str2sz   (const char * ps, char ** pe, int base);
-size_t    str2uz   (const char * ps, char ** pe, int base);
+ptrdiff_t str2pd_r (const char * ps, char ** pe, int base, int * perr);
+size_t    str2sz_r (const char * ps, char ** pe, int base, int * perr);
+ptrdiff_t str2pd   (const char * ps, char ** pe, int base);
+size_t    str2sz   (const char * ps, char ** pe, int base);
 
-         int r_str2i (const char * ps, char ** pe, int base, int * perr);
-unsigned int r_str2u (const char * ps, char ** pe, int base, int * perr);
+ intptr_t str2ip_r (const char * ps, char ** pe, int base, int * perr);
+uintptr_t str2up_r (const char * ps, char ** pe, int base, int * perr);
+ intptr_t str2ip   (const char * ps, char ** pe, int base);
+uintptr_t str2up   (const char * ps, char ** pe, int base);
+
+         int str2i_r (const char * ps, char ** pe, int base, int * perr);
+unsigned int str2u_r (const char * ps, char ** pe, int base, int * perr);
          int str2i   (const char * ps, char ** pe, int base);
 unsigned int str2u   (const char * ps, char ** pe, int base);
 
-         long r_str2l  (const char * ps, char ** pe, int base, int * perr);
-unsigned long r_str2ul (const char * ps, char ** pe, int base, int * perr);
+         long str2l_r  (const char * ps, char ** pe, int base, int * perr);
+unsigned long str2ul_r (const char * ps, char ** pe, int base, int * perr);
          long str2l    (const char * ps, char ** pe, int base);
 unsigned long str2ul   (const char * ps, char ** pe, int base);
 
-         long long r_str2ll  (const char * ps, char ** pe, int base, int * perr);
-unsigned long long r_str2ull (const char * ps, char ** pe, int base, int * perr);
+         long long str2ll_r  (const char * ps, char ** pe, int base, int * perr);
+unsigned long long str2ull_r (const char * ps, char ** pe, int base, int * perr);
          long long str2ll    (const char * ps, char ** pe, int base);
 unsigned long long str2ull   (const char * ps, char ** pe, int base);
 
 
 /* r_str2ld reads a long double from a string and cares about a specified base. */
-long double r_str2ld (const char * psrc, char ** pend, int base, int * perr);
+long double str2ld_r (const char * psrc, char ** pend, int base, int * perr);
 
 /* r_str2d reads a double from a string and cares about a specified base. */
-double      r_str2d  (const char * psrc, char ** pend, int base, int * perr);
+double      str2d_r  (const char * psrc, char ** pend, int base, int * perr);
 
 /* str2ld is a wrapper for strtold that calls r_str2ld for reading long doubles. */
 long double str2ld   (const char * psrc, char ** pend);

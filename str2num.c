@@ -177,10 +177,10 @@ static double powi (uint8_t base, uint32_t expo)
 
 
 /* ------------------------------------------------------------------------- *\
-   r_str2ld reads a long double from a string and cares about a specified base.
+   str2ld_r reads a long double from a string and cares about a specified base.
 \* ------------------------------------------------------------------------- */
 
-long double r_str2ld(const char * psrc, char ** pend, int base, int * perr)
+long double str2ld_r(const char * psrc, char ** pend, int base, int * perr)
 {
    long double  dret  = 0.0;
    int          err   = EINVAL;
@@ -453,17 +453,17 @@ Exit:;
       *perr = err;
 
    return (dret);
-} /* long double r_str2ld(const char * ps, char ** pe, int base, int * perr) */
+} /* long double str2ld_r(const char * ps, char ** pe, int base, int * perr) */
 
 
 /* ------------------------------------------------------------------------- *\
-   str2d is a wrapper for strtold that calls r_str2ld for reading long doubles.
+   str2ld is a wrapper for strtold for reading long doubles.
 \* ------------------------------------------------------------------------- */
 
 long double str2ld(const char * psrc, char ** pend)
 {
    int err = 0;
-   long double dret = r_str2ld(psrc, pend, 0, &err);
+   long double dret = str2ld_r(psrc, pend, 0, &err);
    if(err)
       errno = err;
    return (dret);
@@ -471,10 +471,10 @@ long double str2ld(const char * psrc, char ** pend)
 
 
 /* ------------------------------------------------------------------------- *\
-   r_str2d reads a double from a string and cares about a specified base.
+   str2d_r reads a double from a string and cares about a specified base.
 \* ------------------------------------------------------------------------- */
 
-double r_str2d(const char * psrc, char ** pend, int base, int * perr)
+double str2d_r(const char * psrc, char ** pend, int base, int * perr)
 {
    double       dret  = 0.0;
    int          err   = EINVAL;
@@ -740,17 +740,17 @@ Exit:;
       *perr = err;
 
    return (dret);
-} /* double r_str2d(const char * ps, char ** pe, int base, int * perr) */
+} /* double str2d_r(const char * ps, char ** pe, int base, int * perr) */
 
 
 /* ------------------------------------------------------------------------- *\
-   str2d is a wrapper for strtod that calls r_str2d for reading doubles.
+   str2d is a wrapper for strtod for reading doubles.
 \* ------------------------------------------------------------------------- */
 
 double str2d(const char * psrc, char ** pend)
 {
    int err = 0;
-   double dret = r_str2d(psrc, pend, 0, &err);
+   double dret = str2d_r(psrc, pend, 0, &err);
    if(err)
       errno = err;
    return (dret);
@@ -758,13 +758,13 @@ double str2d(const char * psrc, char ** pend)
 
 
 /* ------------------------------------------------------------------------- *\
-   str2f is a wrapper for strtof that calls r_str2d for reading floats.
+   str2f is a wrapper for strtof for reading floats.
 \* ------------------------------------------------------------------------- */
 
 float str2f(const char * psrc, char ** pend)
 {
    int err = 0;
-   float dret = (float) r_str2d(psrc, pend, 0, &err);
+   float dret = (float) str2d_r(psrc, pend, 0, &err);
    if(err)
       errno = err;
    return (dret);
@@ -776,8 +776,10 @@ float str2f(const char * psrc, char ** pend)
 \* ========================================================================= */
 
 /*
-   SFN   signed function
-   UFN   unsigned function
+   SFE   signed function name that uses errno for errors
+   UFE   unsigned function name that uses errno for errors
+   SFN   signed function name
+   UFN   unsigned function name
    UT    unsigned type
    ST    signed type
    U_MAX maximum of unsigned type
@@ -785,70 +787,97 @@ float str2f(const char * psrc, char ** pend)
    S_MIN minimum of signed type
 */
 
-#define SFN(Fn) Fn##i64
-#define UFN(Fn) Fn##u64
-#define UT uint64_t
-#define ST int64_t
+
+#define SFE str2i64
+#define UFE str2u64
+#define SFN str2i64_r
+#define UFN str2u64_r
+#define UT  uint64_t
+#define ST  int64_t
 #define U_MAX UINT64_MAX
 #define S_MAX INT64_MAX
 #define S_MIN INT64_MIN
 
 #include "str2num.c"
 
-#define SFN(Fn) Fn##i32
-#define UFN(Fn) Fn##u32
-#define UT uint32_t
-#define ST int32_t
+#define SFE str2i32
+#define UFE str2u32
+#define SFN str2i32_r
+#define UFN str2u32_r
+#define UT  uint32_t
+#define ST  int32_t
 #define U_MAX UINT32_MAX
 #define S_MAX INT32_MAX
 #define S_MIN INT32_MIN
 
 #include "str2num.c"
 
-#define SFN(Fn) Fn##i16
-#define UFN(Fn) Fn##u16
-#define UT uint16_t
-#define ST int16_t
+#define SFE str2i16
+#define UFE str2u16
+#define SFN str2i16_r
+#define UFN str2u16_r
+#define UT  uint16_t
+#define ST  int16_t
 #define U_MAX UINT16_MAX
 #define S_MAX INT16_MAX
 #define S_MIN INT16_MIN
 
 #include "str2num.c"
 
-#define SFN(Fn) Fn##i8
-#define UFN(Fn) Fn##u8
-#define UT uint8_t
-#define ST int8_t
+#define SFE str2i8
+#define UFE str2u8
+#define SFN str2i8_r
+#define UFN str2u8_r
+#define UT  uint8_t
+#define ST  int8_t
 #define U_MAX UINT8_MAX
 #define S_MAX INT8_MAX
 #define S_MIN INT8_MIN
 
 #include "str2num.c"
 
-#define SFN(Fn) Fn##sz
-#define UFN(Fn) Fn##uz
-#define UT size_t
-#define ST ptrdiff_t
+#define SFE str2pd
+#define UFE str2sz
+#define SFN str2pd_r
+#define UFN str2sz_r
+#define UT  size_t
+#define ST  ptrdiff_t
 #define U_MAX (~(size_t)0)
 #define S_MIN ((ptrdiff_t) 1 << (sizeof(ptrdiff_t) * 8 - 1))
 #define S_MAX (~S_MIN)
 
 #include "str2num.c"
 
-#define SFN(Fn) Fn##l
-#define UFN(Fn) Fn##ul
-#define UT unsigned long
-#define ST long
+#define SFE str2ip
+#define UFE str2up
+#define SFN str2ip_r
+#define UFN str2up_r
+#define UT  uintptr_t
+#define ST  intptr_t
+#define U_MAX (~(uintptr_t)0)
+#define S_MIN ((intptr_t) 1 << (sizeof(intptr_t) * 8 - 1))
+#define S_MAX (~S_MIN)
+
+#include "str2num.c"
+
+#define SFE str2l
+#define UFE str2ul
+#define SFN str2l_r
+#define UFN str2ul_r
+#define UT  unsigned long
+#define ST  long
 #define U_MAX (~(unsigned long)0)
 #define S_MIN ((long) 1 << (sizeof(long) * 8 - 1))
 #define S_MAX (~S_MIN)
 
 #include "str2num.c"
 
-#define SFN(Fn) Fn##ll
-#define UFN(Fn) Fn##ull
-#define UT unsigned long long
-#define ST long long
+#define SFE str2ll
+#define UFE str2ull
+#define SFN str2ll_r
+#define UFN str2ull_r
+#define UT  unsigned long long
+#define ST  long long
 #define U_MAX (~(unsigned long long)0)
 #define S_MIN ((long long) 1 << (sizeof(long long) * 8 - 1))
 #define S_MAX (~S_MIN)
@@ -863,10 +892,10 @@ float str2f(const char * psrc, char ** pend)
 \* ========================================================================= */
 
 /* ------------------------------------------------------------------------- *\
-   UFN(r_str2) converts a string to an unsigned integer type
+   UFN converts a string to an unsigned integer type
 \* ------------------------------------------------------------------------- */
 
-UT UFN(r_str2) (const char * ps, char ** pe, int base, int * perr)
+UT UFN (const char * ps, char ** pe, int base, int * perr)
 {
    UT  u_ret = 0;
    int err   = 0;
@@ -1013,28 +1042,30 @@ Exit:;
       *pe = (char *) ps;
 
    return(u_ret);
-}/* UT UFN(r_str2) */
+}/* UT UFN(...) */
 
 
 
 /* ------------------------------------------------------------------------- *\
-   UFN(str2) converts a string to an unsigned integer type
+   UFE converts a string to an unsigned integer type
 \* ------------------------------------------------------------------------- */
-UT UFN(str2) (const char * ps, char ** pe, int base)
+
+UT UFE (const char * ps, char ** pe, int base)
 {
    int err;
-   UT  u_ret = UFN(r_str2) (ps, pe, base, &err);
+   UT  u_ret = UFN (ps, pe, base, &err);
    if(err)
       errno = err;
    return(u_ret);
-} /* UT UFN(str2) */
+} /* UT UFE (...) */
 
 
 
 /* ------------------------------------------------------------------------- *\
-   ST SFN(str2) converts a string to a signed integer type
+   ST SFN converts a string to a signed integer type
 \* ------------------------------------------------------------------------- */
-ST SFN(r_str2)(const char * ps, char ** pe, int base, int * perr)
+
+ST SFN (const char * ps, char ** pe, int base, int * perr)
 {
    ST  s_ret = 0;
    int err   = 0;
@@ -1192,23 +1223,25 @@ ST SFN(r_str2)(const char * ps, char ** pe, int base, int * perr)
       *pe = (char *) ps;
 
    return(s_ret);
-}/* ST SFN(r_str2) */
+}/* ST SFN (...)*/
 
 
 /* ------------------------------------------------------------------------- *\
-   SFN(str2) converts a string to an unsigned integer type
+   SFE converts a string to an unsigned integer type
 \* ------------------------------------------------------------------------- */
-ST SFN(str2) (const char * ps, char ** pe, int base)
+
+ST SFE (const char * ps, char ** pe, int base)
 {
    int err;
-   ST  s_ret = SFN(r_str2) (ps, pe, base, &err);
+   ST  s_ret = SFN (ps, pe, base, &err);
    if(err)
       errno = err;
    return(s_ret);
-}/* ST SFN(str2) */
+}/* ST SFE(...) */
 
 
-
+#undef SFE
+#undef UFE
 #undef SFN
 #undef UFN
 #undef UT
@@ -1222,3 +1255,4 @@ ST SFN(str2) (const char * ps, char ** pe, int base)
 /* ========================================================================= *\
    E N D   O F   F I L E
 \* ========================================================================= */
+

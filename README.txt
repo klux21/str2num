@@ -19,8 +19,11 @@ uint16_t  str2u16  (const char * ps, char ** pe, int base);
  int8_t   str2i8   (const char * ps, char ** pe, int base);
 uint8_t   str2u8   (const char * ps, char ** pe, int base);
 
-ptrdiff_t str2sz   (const char * ps, char ** pe, int base);
-size_t    str2uz   (const char * ps, char ** pe, int base);
+ptrdiff_t str2pd   (const char * ps, char ** pe, int base);
+size_t    str2sz   (const char * ps, char ** pe, int base);
+
+intptr_t  str2ip   (const char * ps, char ** pe, int base);
+uintptr_t str2up   (const char * ps, char ** pe, int base);
 
          int str2i (const char * ps, char ** pe, int base);
 unsigned int str2u (const char * ps, char ** pe, int base);
@@ -34,11 +37,19 @@ unsigned long long str2ull (const char * ps, char ** pe, int base);
 
 All functions implement overflow handling according to the returned types and
 standards and support the common numeric bases between 2 and 36.
+For all those functions a reentrant safe version with an _r appended to the
+name exist. The *_r version take an optional pointer to an int as last
+argument for storing the error value (or 0 in success case) instead using
+errno. The *_r versions are slightly faster.
+
+In version 2.0 the names of r_* functions were changed to a more standard
+like *_r version and the function names for ptrdiff_t and size_t were adjusted.
+as well. 
 
 Adding the support of other signed or unsigned integer types is very trivial
 because the implementation only requires some few macros for the types and
 their limits and a subsequent recursive include of str2num.c that acts like
-a template as well.
+a template as well. 
 
 There are a bunch of functions for reading floating point numbers of different
 numeric bases from a string in the format that callback_printf uses where the
@@ -48,8 +59,8 @@ The numeric format of the %a printf output where the mantisse is hexadecimal
 and the exponent is for a base 2 mantissa but given decimal after a 'p' is
 supported as well. There are
 
-long double r_str2ld (const char * psrc, char ** pend, int base, int * perr);
-double      r_str2d  (const char * psrc, char ** pend, int base, int * perr);
+long double str2ld_r (const char * psrc, char ** pend, int base, int * perr);
+double      str2d_r  (const char * psrc, char ** pend, int base, int * perr);
 
 and some wrappers of strtof, strtod and strtold which are using those
 
@@ -59,7 +70,7 @@ float       str2f  (const char * psrc, char ** pend);
 
 The mantissa of dual and hexadecimal numbers must be prefixed with 0b or 0x
 for an automatic recognition of the base where you can't specify the base as
-an argument. r_str2d and r_str2ld are doing an automatic base recognition if
+an argument. str2d_r and str2ld_r are doing an automatic base recognition if
 the base is set to 0.
 
 Because of the generic calculations the mantissa of the returned numbers may
