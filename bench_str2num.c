@@ -595,6 +595,8 @@ int run_float_tests()
    strcpy(&buf[i++][0], "    -7..e5e-3 ");
    strcpy(&buf[i++][0], "    ");
    strcpy(&buf[i++][0], " abx ");
+   strcpy(&buf[i++][0], "    +0,25e-5 ");
+   strcpy(&buf[i++][0], "    -0,25e-5 ");
 
 #ifndef _WIN32
    strcpy(&buf[i++][0], "   +1.594561e-318");
@@ -1024,7 +1026,7 @@ int run_float_tests()
 
       if (ld0 != ld1)
       {
-         sfprintf(stderr, "%d: Return values of strtod() and str2d() differ for '%s'! (%.32La != %.32La)\n",
+         sfprintf(stderr, "%d: Return values of strtold() and str2ld() differ for '%s'! (%.32La != %.32La)\n",
                   __LINE__, ps, ld1, ld0);
       }
 
