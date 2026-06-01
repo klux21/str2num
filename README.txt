@@ -35,16 +35,26 @@ unsigned long str2ul (const char * ps, char ** pe, int base);
 unsigned long long str2ull (const char * ps, char ** pe, int base);
 
 
-All functions implement overflow handling according to the returned types and
-standards and support the common numeric bases between 2 and 36.
-For all those functions a reentrant safe version with an _r appended to the
-name exist. The *_r version take an optional pointer to an int as last
-argument for storing the error value (or 0 in success case) instead using
-errno. The *_r versions are slightly faster.
+All functions implement overflow handling according the C standards
+and the range of the types. All function support all numeric bases
+between 2 and 36.
 
-In version 2.0 the names of r_* functions were changed to a more standard
-like *_r version and the function names for ptrdiff_t and size_t were adjusted.
-as well. 
+All function recognize the prefixes 0b for dual numbers, 0o for octal numbers
+and 0x for hexadecimal numbers if the base is set to 0 or 1.
+
+If the base is set to 1 than a different recognition of numeric bases happens.
+All numbers with leading zeros are recognized as decimal values and all octal
+numbers require the prefix 0o for being recognized as octal values.
+This prevents an unintended input of octal numbers.
+    
+For all functions exist a reentrant safe version with an _r appended to
+the function name. The *_r versions have an optional pointer to an int as
+last parameter for storing the error value (or 0 in success case) instead
+using errno. This is easier to use and slightly faster as well.
+
+( Note: In version 2.0 the previous r_* names of those functions were
+  changed to a more common *_r name. The names of the functions for
+  reading  ptrdiff_t and size_t values were adjusted too. ) 
 
 Adding the support of other signed or unsigned integer types is very trivial
 because the implementation only requires some few macros for the types and
