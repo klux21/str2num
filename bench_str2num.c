@@ -168,10 +168,133 @@ int64_t TimeStamp()
 }/* int64_t TimeStamp() */
 #endif
 
+typedef struct STRING_VALUE_S STRING_VALUE;
+struct STRING_VALUE_S
+{
+   const char * ps;
+   int          base;
+   uint64_t     value;
+};
+
+int test_base_detection()
+{
+   int iRet = 0;
+   STRING_VALUE   TestData0[] = {{ " 123", 10,  123}, {  "0123",  8,  0123}, {  "0o123", 8,  0123}, { " 0b1123", 2,  3},  {"0x123", 16,  0x123},
+                                 {" -123", 10, -123}, {"-01239",  8, -0123}, {"-0o1239", 8, -0123}, {" -0b1123", 2, -3}, {"-0x123", 16, -0x123}};
+
+   STRING_VALUE   TestData1[] = {{ " 123", 10,  123}, {  "0123", 10,   123}, {  "0o123", 8,  0123}, {  "0b1123", 2,  3},  {"0x123", 16,  0x123},
+                                 {" -123", 10, -123}, {"-01239", 10, -1239}, {"-0o1239", 8, -0123}, {" -0b1123", 2, -3}, {"-0x123", 16, -0x123}};
+
+   size_t         count  = ARRAY_SIZE(TestData0);
+   STRING_VALUE * pSV = TestData0;
+
+   while (count--)
+   {
+      int err = 0;
+      if((pSV->value != str2ll_r(pSV->ps,NULL,0,&err)) || err)
+      {
+         sfprintf(stderr, "Unexpected return value %lld of str2ll_r(\"%s\", NULL, 0, err) -> (err=%d (%s))!\n",
+                   str2ll_r(pSV->ps,NULL,0,NULL), pSV->ps, err, strerror(err));
+         goto Exit;
+      }
+
+      if((pSV->value != (int64_t) str2ull_r(pSV->ps,NULL,0,&err)) || err)
+      {
+         sfprintf(stderr, "Unexpected return value %lld of str2ull_r(\"%s\", NULL, 0, err) -> (err=%d (%s))!\n",
+                   str2ull_r(pSV->ps,NULL,0,NULL), pSV->ps, err, strerror(err));
+         goto Exit;
+      }
+
+      if((pSV->value != str2ll_r(pSV->ps,NULL,pSV->base,&err)) || err)
+      {
+         sfprintf(stderr, "Unexpected return value %lld of str2ll_r(\"%s\", NULL, %d, err) -> (err=%d (%s))!\n",
+                   str2ll_r(pSV->ps,NULL,pSV->base,NULL), pSV->ps, pSV->base, err, strerror(err));
+         goto Exit;
+      }
+
+      if((pSV->value != (int64_t) str2ull_r(pSV->ps,NULL,pSV->base,&err)) || err)
+      {
+         sfprintf(stderr, "Unexpected return value %lld of str2ull_r(\"%s\", NULL, %d, err) -> (err=%d (%s))!\n",
+                   str2ull_r(pSV->ps,NULL,pSV->base,NULL), pSV->ps, pSV->base, err, strerror(err));
+         goto Exit;
+      }
+
+      ++pSV;
+   }
+
+   count = ARRAY_SIZE(TestData1);
+   pSV   = TestData1;
+
+   while (count--)
+   {
+      int err = 0;
+      if((pSV->value != str2ll_r(pSV->ps,NULL,1,&err)) || err)
+      {
+         sfprintf(stderr, "Unexpected return value %lld of str2ll_r(\"%s\", NULL, 0, err) -> (err=%d (%s))!\n",
+                   str2ll_r(pSV->ps,NULL,0,NULL), pSV->ps, err, strerror(err));
+         goto Exit;
+      }
+
+      if((pSV->value != (int64_t) str2ull_r(pSV->ps,NULL,1,&err)) || err)
+      {
+         sfprintf(stderr, "Unexpected return value %lld of str2ull_r(\"%s\", NULL, 0, err) -> (err=%d (%s))!\n",
+                   str2ull_r(pSV->ps,NULL,0,NULL), pSV->ps, err, strerror(err));
+         goto Exit;
+      }
+
+      if((pSV->value != str2ll_r(pSV->ps,NULL,pSV->base,&err)) || err)
+      {
+         sfprintf(stderr, "Unexpected return value %lld instead %llu  of str2ll_r(\"%s\", NULL, %d, err) -> (err=%d (%s))!\n",
+                   str2ll_r(pSV->ps,NULL,pSV->base,NULL), pSV->ps, pSV->base, err, strerror(err));
+         goto Exit;
+      }
+
+      if((pSV->value != (int64_t) str2ull_r(pSV->ps,NULL,pSV->base,&err)) || err)
+      {
+         sfprintf(stderr, "Unexpected return value %lld of str2ull_r(\"%s\", NULL, %d, err) -> (err=%d (%s))!\n",
+                   str2ull_r(pSV->ps,NULL,pSV->base,NULL), pSV->ps, pSV->base, err, strerror(err));
+         goto Exit;
+      }
+
+      if((pSV->value != (int64_t) str2d_r(pSV->ps,NULL,0,&err)) || err)
+      {
+         sfprintf(stderr, "Unexpected return value %lld of str2d_r(\"%s\", NULL, 0, err) -> (err=%d (%s))!\n",
+                  (int64_t) str2d_r(pSV->ps,NULL,0,NULL), pSV->ps, err, strerror(err));
+         goto Exit;
+      }
+
+      if((pSV->value != (int64_t) str2ld_r(pSV->ps,NULL,0,&err)) || err)
+      {
+         sfprintf(stderr, "Unexpected return value %lld of str2ld_r(\"%s\", NULL, 0, err) -> (err=%d (%s))!\n",
+                  (int64_t) str2ld_r(pSV->ps,NULL,0,NULL), pSV->ps, err, strerror(err));
+         goto Exit;
+      }
+
+      if((pSV->value != (int64_t) str2d_r(pSV->ps,NULL,1,&err)) || err)
+      {
+         sfprintf(stderr, "Unexpected return value %lld of str2d_r(\"%s\", NULL, 0, err) -> (err=%d (%s))!\n",
+                  (int64_t) str2d_r(pSV->ps,NULL,0,NULL), pSV->ps, err, strerror(err));
+         goto Exit;
+      }
+
+      if((pSV->value != (int64_t) str2ld_r(pSV->ps,NULL,1,&err)) || err)
+      {
+         sfprintf(stderr, "Unexpected return value %lld of str2ld_r(\"%s\", NULL, 0, err) -> (err=%d (%s))!\n",
+                  (int64_t) str2ld_r(pSV->ps,NULL,0,NULL), pSV->ps, err, strerror(err));
+         goto Exit;
+      }
+
+      ++pSV;
+   }
+
+   iRet = 1;
+   Exit:;
+   return (iRet);
+} /* int test_base_detection() */
 
 int run_tests()
 {
-   int iret = 0;
+   int iRet = 0;
 
    time_t t0 = TimeStamp();
    time_t t1 = TimeStamp();
@@ -363,9 +486,9 @@ int run_tests()
       }
    }
 
-   iret = 1;
+   iRet = 1;
    Exit:;
-   return (iret);
+   return (iRet);
 } /* run_tests() */
 
 int test_str2value()
@@ -382,7 +505,7 @@ int test_str2value()
    int e1;
    int e2;
    int    base = 2;
-   int64_t long_values[] = {0, 1, -1, LLONG_MIN, LLONG_MIN+1, LLONG_MIN+2, LLONG_MIN+3, LLONG_MAX, LLONG_MAX-1, LLONG_MAX-2, LLONG_MAX-3};
+   int64_t long_values[] = {0, 1, -1, 5, -5, 9, -9, 17, -17, LLONG_MIN, LLONG_MIN+1, LLONG_MIN+2, LLONG_MIN+3, LLONG_MAX, LLONG_MAX-1, LLONG_MAX-2, LLONG_MAX-3};
 
    while(base <= 36)
    {
@@ -390,8 +513,8 @@ int test_str2value()
       size_t count  = ARRAY_SIZE(long_values);
       while (count--) 
       {
-          if ((base == 16) && (*pvalue > 0))
-              ssprintf(buf, "0x%r*l8d", base, *pvalue++);
+          if (base == 16)
+              ssprintf(buf, "%#r*l8d", base, *pvalue++);
           else
               ssprintf(buf, "%r*l8d", base, *pvalue++);
 
@@ -435,19 +558,24 @@ int test_str2value()
       size_t count  = ARRAY_SIZE(long_values);
       while (count--) 
       {
-          ssprintf(buf, "%r*l8d%d", base, *pvalue++, base-1);
+          if (base == 16)
+              ssprintf(buf, "%#r*l8d%d", base, *pvalue++, base-1);
+          else
+              ssprintf(buf, "%r*l8d%d", base, *pvalue++, base-1);
+
           errno = 0;
           l1 = strtoll(buf, &p1, base);
           e1 = errno;
           errno = 0;
           l2 = str2ll(buf, &p2, base);
           e2 = errno;
+
           if ((l2 != l1) || (p1 != p2) || (e1 && !e2) || (e2 && !e1))
           {
              sfprintf(stderr, "Different return values of strtoll (%l8d (0x%l8x), pos %td, errno=%d)\n"
-                              " and str2ll (%l8d (0x%l8x), pos %td, errno=%d)\n for base %d and string '%s'!\n",
+                      " and str2ll (%l8d (0x%l8x), pos %td, errno=%d)\n for base %d and string '%s'!\n",
                        l1, l1, p1-buf, e1, l2, l2, p2-buf, e2, base, buf);
-             l2 = str2ll(buf, &p2, base);
+             l2 = str2ll(buf, &p2, base); /* for debugging of the problems */
              goto Exit;
           }
 
@@ -463,7 +591,46 @@ int test_str2value()
              sfprintf(stderr, "Different return values of strtoull (%l8u (0x%l8x), pos %td, errno=%d)\n"
                               " and str2ull (%l8u (0x%l8x), pos %td, errno=%d)\n for base %d and string '%s'!\n",
                        u1, u1, p1-buf, e1, u2, u2, p2-buf, e2, base, buf);
-             u2 = str2ull(buf, &p2, base);
+             u2 = str2ull(buf, &p2, base); /* for debugging of the problems */
+             //goto Exit;
+          }
+      }
+      ++base;
+   }
+
+   base = 2;
+   while(base <= 36)
+   {
+      int64_t * pvalue = long_values;
+      size_t count  = ARRAY_SIZE(long_values);
+      while (count--) 
+      {
+          l1 = *pvalue++;
+
+          ssprintf(buf, "%#r*l8d", base, l1);
+
+          errno = 0;
+          l2 = str2ll(buf, &p2, base);
+          e2 = errno;
+          if ((l2 != l1) || (e2))
+          {
+             sfprintf(stderr, "Unexpected return value of str2ll (%l8d (0x%l8x), pos %td, errno=%d)\n"
+                      "instead of %l8d (0x%l8x) for base %d and string '%s'!\n",
+                       l2, l2, p2-buf, e2, l1, l1, base, buf);
+             l2 = str2ll(buf, &p2, base);  /* for debugging of the problems */
+             //goto Exit;
+          }
+
+          errno = 0;
+          u2 = str2ull(buf, &p2, base);
+          e2 = errno;
+
+          if ((u2 != (uint64_t) l1) || (e2))
+          {
+             sfprintf(stderr, "Unexpected return value of str2ull (%l8u (0x%l8x), pos %td, errno=%d)\n"
+                       " instead of %l8u (0x%l8x) for base %d and string '%s'!\n",
+                       l2, l2, p2-buf, e2, l1, l1, base, buf);
+             u2 = str2ull(buf, &p2, base);  /* for debugging of the problems */
              //goto Exit;
           }
       }
@@ -1166,6 +1333,10 @@ int run_float_tests()
 int main(int argc, char * argv[])
 {
     int iret = 1;
+
+    if(!test_base_detection())
+        goto Exit;
+
     if(!test_str2value())
         goto Exit;
 
