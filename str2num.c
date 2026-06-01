@@ -280,9 +280,6 @@ long double str2ld_r(const char * psrc, char ** pend, int base, int * perr)
    }/* if(base < 2) */
    else
    {
-      if(base > 36)
-         goto Exit; /* invalid base */
-
       /* Care about base specifications in hex data even if base is given.
          (It's a rather dirty thing within the specification of strtoul.) */
       if((base == 16) && (*ps == '0') && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t) ps[2]] < 16))
@@ -580,9 +577,6 @@ double str2d_r(const char * psrc, char ** pend, int base, int * perr)
    }/* if(base < 2) */
    else
    {
-      if(base > 36)
-         goto Exit; /* invalid base */
-
       /* Care about base specifications in hex data even if base is given.
          (It's a rather dirty thing within the specification of strtoul.) */
       if((base == 16) && (*ps == '0') && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t) ps[2]] < 16))
