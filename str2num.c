@@ -192,7 +192,7 @@ long double str2ld_r(const char * psrc, char ** pend, int base, int * perr)
    int32_t      c     = 0;   /* correction of comma position */
    uint8_t      d     = 0;   /* last found digit */
 
-   if(!ps || (base == 1) || (base > 36))
+   if(!ps || (base < 0) || (base > 36))
       goto Exit;
 
    /* skip leading blanks */
@@ -255,7 +255,7 @@ long double str2ld_r(const char * psrc, char ** pend, int base, int * perr)
       }
    }
 
-   if(!base)
+   if(base < 2)
    { /* let's detect the base */
       base = 10; /* default base is 10 */
 
@@ -277,10 +277,10 @@ long double str2ld_r(const char * psrc, char ** pend, int base, int * perr)
             ps += 2;
          }
       }
-   }/* if(!base) */
+   }/* if(base < 2) */
    else
    {
-      if((base < 2) || (base > 36))
+      if(base > 36)
          goto Exit; /* invalid base */
 
       /* Care about base specifications in hex data even if base is given.
@@ -492,7 +492,7 @@ double str2d_r(const char * psrc, char ** pend, int base, int * perr)
    int32_t      c     = 0;   /* correction of comma position */
    uint8_t      d     = 0;   /* last found digit */
 
-   if(!ps || (base == 1) || (base > 36))
+   if(!ps || (base < 0) || (base > 36))
       goto Exit;
 
    /* skip leading blanks */
@@ -555,7 +555,7 @@ double str2d_r(const char * psrc, char ** pend, int base, int * perr)
       }
    }
 
-   if(!base)
+   if(base < 2)
    { /* let's detect the base */
       base = 10; /* default base is 10 */
 
@@ -577,10 +577,10 @@ double str2d_r(const char * psrc, char ** pend, int base, int * perr)
             ps += 2;
          }
       }
-   }/* if(!base) */
+   }/* if(base < 2) */
    else
    {
-      if((base < 2) || (base > 36))
+      if(base > 36)
          goto Exit; /* invalid base */
 
       /* Care about base specifications in hex data even if base is given.
