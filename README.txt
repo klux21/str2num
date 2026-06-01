@@ -35,17 +35,16 @@ unsigned long str2ul (const char * ps, char ** pe, int base);
 unsigned long long str2ull (const char * ps, char ** pe, int base);
 
 
-All functions implement overflow handling according the C standards
-and the range of the types. All function support all numeric bases
-between 2 and 36.
+All functions implement overflow handling according to the C standards and the
+several types. All function support all numeric bases between 2 and 36.
 
 All function recognize the prefixes 0b for dual numbers, 0o for octal numbers
 and 0x for hexadecimal numbers if the base is set to 0 or 1.
 
-If the base is set to 1 than a different recognition of numeric bases happens.
-All numbers with leading zeros are recognized as decimal values and all octal
-numbers require the prefix 0o for being recognized as octal values.
-This prevents an unintended input of octal numbers.
+If the base is set to 1 than a different recognition of the numeric base
+happens. All numbers with leading zeros are recognized as decimal values
+and all octal numbers require the prefix 0o for being recognized as octal
+values. This prevents an unintended octal numbers because of a leading 0.
     
 For all functions exist a reentrant safe version with an _r appended to
 the function name. The *_r versions have an optional pointer to an int as
