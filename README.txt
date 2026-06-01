@@ -44,7 +44,7 @@ and 0x for hexadecimal numbers if the base is set to 0 or 1.
 If the base is set to 1 than a different recognition of the numeric base
 happens. All numbers with leading zeros are recognized as decimal values
 and all octal numbers require the prefix 0o for being recognized as octal
-values. This prevents an unintended octal numbers because of a leading 0.
+values. This prevents unintended octal numbers because of a leading 0.
     
 For all functions exist a reentrant safe version with an _r appended to
 the function name. The *_r versions have an optional pointer to an int as
