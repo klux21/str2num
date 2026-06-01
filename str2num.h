@@ -61,7 +61,11 @@ extern const uint8_t digit_value[256];
 
 /* The functions are full featured wrappers for strtol or strtoul like functions. 
    All functions return the minimum or maximum value of the integer type in case of overflows.  
-   The r_* variants are reentrant save and return errors in *perr instead in errno. */
+   The r_* variants are reentrant save and return errors in *perr instead in errno.
+   All functions support the prefixes 0b for dual values, 0o for octal numbers and 0x for hexadecimal values.
+   If base is set to 1 than numbers with a leading 0 are recognized as decimal values and octal values require
+   the prefix 0o for being recognized as octal values.
+   Octal floating point values always require the prefix 0o for an automatic detection of that base. */
 
  int64_t str2i64_r (const char * ps, char ** pe, int base, int * perr);
 uint64_t str2u64_r (const char * ps, char ** pe, int base, int * perr);

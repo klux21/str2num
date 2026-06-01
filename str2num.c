@@ -271,6 +271,11 @@ long double str2ld_r(const char * psrc, char ** pend, int base, int * perr)
             base = 2;
             ps += 2;
          }
+         else if(((*(ps+1) == 'o') || (*(ps+1) == 'O')) && (digit_value[(uint8_t) *(ps+2)] < 8))
+         {
+            base = 8;
+            ps += 2;
+         }
       }
    }/* if(!base) */
    else
@@ -283,6 +288,8 @@ long double str2ld_r(const char * psrc, char ** pend, int base, int * perr)
       if((base == 16) && (*ps == '0') && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t) ps[2]] < 16))
          ps += 2;
       else if((base == 2) && (*ps == '0') && ((ps[1] == 'b') || (ps[1] == 'B')) && (digit_value[(uint8_t) ps[2]] < 2))
+         ps += 2;
+      else if((base == 8) && (*ps == '0') && ((ps[1] == 'o') || (ps[1] == 'O')) && (digit_value[(uint8_t) ps[2]] < 8))
          ps += 2;
    }
 
@@ -332,7 +339,7 @@ long double str2ld_r(const char * psrc, char ** pend, int base, int * perr)
       }
    }
 
-   if (((base < 15) && ((*ps | 0x20) == 'e')) || ((base >= 15) && (*ps == '~')))
+   if (((base < 15) && ((*ps | 0x20) == 'e')) || (*ps == '~'))
    {
       int32_t   exp_sign = 0;   /* whether the exponent is signed */
 
@@ -564,6 +571,11 @@ double str2d_r(const char * psrc, char ** pend, int base, int * perr)
             base = 2;
             ps += 2;
          }
+         else if(((*(ps+1) == 'o') || (*(ps+1) == 'O')) && (digit_value[(uint8_t) *(ps+2)] < 8))
+         {
+            base = 8;
+            ps += 2;
+         }
       }
    }/* if(!base) */
    else
@@ -576,6 +588,8 @@ double str2d_r(const char * psrc, char ** pend, int base, int * perr)
       if((base == 16) && (*ps == '0') && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t) ps[2]] < 16))
          ps += 2;
       else if((base == 2) && (*ps == '0') && ((ps[1] == 'b') || (ps[1] == 'B')) && (digit_value[(uint8_t) ps[2]] < 2))
+         ps += 2;
+      else if((base == 8) && (*ps == '0') && ((ps[1] == 'o') || (ps[1] == 'O')) && (digit_value[(uint8_t) ps[2]] < 8))
          ps += 2;
    }
 
@@ -619,7 +633,7 @@ double str2d_r(const char * psrc, char ** pend, int base, int * perr)
       }
    }
 
-   if (((base < 15) && ((*ps | 0x20) == 'e')) || ((base >= 15) && (*ps == '~')))
+   if (((base < 15) && ((*ps | 0x20) == 'e')) || (*ps == '~'))
    {
       int32_t exp_sign = 0; /* sign of exponent */
 
@@ -928,8 +942,15 @@ UT UFN (const char * ps, char ** pe, int base, int * perr)
       ++ps;
    }
 
-   if(!base)
+   if(base < 2)
    { /* let's detect the base */
+      if (base < 0)
+      {
+         ps  = psrc;
+         err = EINVAL;
+         goto Exit;
+      }
+
       if((*ps > '0') && (*ps <= '9'))
       {
          base = 10;
@@ -947,28 +968,47 @@ UT UFN (const char * ps, char ** pe, int base, int * perr)
             base = 2;
             ++ps;
          }
-         else
+         else if(((*ps == 'o') || (*ps == 'O')) && (digit_value[(uint8_t) ps[1]] < 2))
          {
+            base = 8;
+            ++ps;
+         }
+         else if(!base)
+         { /* if base is 0 than the default base after a leading 0 is 8 */
             base = 8;
             if (digit_value[(uint8_t) *ps] >= 8)
                goto Exit;
          }
+         else
+         { /* if base is 1 than the default base after a leading 0 is 10 */
+            base = 10;
+            if (digit_value[(uint8_t) *ps] >= 10)
+               goto Exit;
+         }
       }
-   }/* if(!base) */
-   else
-   {  /* Care about base specifications in hex data even if base is given.
-         (It's a rather dirty thing within the specification of strtoul.) */
-      if((base == 16) && (*ps == '0') && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t) ps[2]] < 16))
-         ps += 2;
-      else if((base == 2) && (*ps == '0') && ((ps[1] == 'b') || (ps[1] == 'B')) && (digit_value[(uint8_t) ps[2]] < 2))
-         ps += 2;
+      else
+      {
+         ps  = psrc;
+         err = EINVAL;
+         goto Exit;
+      }
    }
-
-   if((base < 2) || (base > 36))
+   else if(base > 36)
    {
       ps  = psrc;
       err = EINVAL;
       goto Exit;
+   }
+   else if(*ps == '0')
+   {
+      /* Care about base specifications in hex data even if base is given.
+         (It's a rather dirty thing within the specification of strtoul.) */
+      if((base == 16)  && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t) ps[2]] < 16))
+         ps += 2;
+      else if((base == 2) && ((ps[1] == 'b') || (ps[1] == 'B')) && (digit_value[(uint8_t) ps[2]] < 2))
+         ps += 2;
+      else if((base == 8) && ((ps[1] == 'o') || (ps[1] == 'O')) && (digit_value[(uint8_t) ps[2]] < 8))
+         ps += 2;
    }
 
    max = max_base[base];
@@ -1102,8 +1142,15 @@ ST SFN (const char * ps, char ** pe, int base, int * perr)
       ++ps;
    }
 
-   if(!base)
+   if(base < 2)
    { /* let's detect the base */
+      if (base < 0)
+      {
+         ps  = psrc;
+         err = EINVAL;
+         goto Exit;
+      }
+
       if((*ps > '0') && (*ps <= '9'))
       {
          base = 10;
@@ -1121,28 +1168,47 @@ ST SFN (const char * ps, char ** pe, int base, int * perr)
             base = 2;
             ++ps;
          }
-         else
+         else if(((*ps == 'o') || (*ps == 'O')) && (digit_value[(uint8_t) ps[1]] < 2))
          {
+            base = 8;
+            ++ps;
+         }
+         else if(!base)
+         { /* if base is 0 than the default base after a leading 0 is 8 */
             base = 8;
             if (digit_value[(uint8_t) *ps] >= 8)
                goto Exit;
          }
+         else
+         { /* if base is 1 than the default base after a leading 0 is 10 */
+            base = 10;
+            if (digit_value[(uint8_t) *ps] >= 10)
+               goto Exit;
+         }
       }
-   }/* if(!base) */
-   else
-   {  /* Care about base specifications in hex data even if base is given.
-         (It's a rather dirty thing within the specification of strtol.) */
-      if((base == 16) && (*ps == '0') && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t) ps[2]] < 16))
-         ps += 2;
-      else if((base == 2) && (*ps == '0') && ((ps[1] == 'b') || (ps[1] == 'B')) && (digit_value[(uint8_t) ps[2]] < 2))
-         ps += 2;
+      else
+      {
+         ps  = psrc;
+         err = EINVAL;
+         goto Exit;
+      }
    }
-
-   if((base < 2) || (base > 36))
+   else if(base > 36)
    {
       ps  = psrc;
       err = EINVAL;
       goto Exit;
+   }
+   else if(*ps == '0')
+   {
+      /* Care about base specifications in hex data even if base is given.
+         (It's a rather dirty thing within the specification of strtoul.) */
+      if((base == 16)  && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t) ps[2]] < 16))
+         ps += 2;
+      else if((base == 2) && ((ps[1] == 'b') || (ps[1] == 'B')) && (digit_value[(uint8_t) ps[2]] < 2))
+         ps += 2;
+      else if((base == 8) && ((ps[1] == 'o') || (ps[1] == 'O')) && (digit_value[(uint8_t) ps[2]] < 8))
+         ps += 2;
    }
 
    max = sign < 0 ? -min_base[base] : max_base[base];
