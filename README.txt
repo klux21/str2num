@@ -86,13 +86,13 @@ Because of the generic calculations the mantissa of the returned numbers may
 slightly deviate in the least significant digits from the one the exact value
 if the numeric base of the value is not a power of 2. Denormalized numbers as
 well as infinity and NaN are supported according to the C standard.
-The code doesn't depend on the math library but the code is pretty new and the
-functions are not yet much tested beside of the tests in bench_str2num.c .
+The code doesn't require the linkage of the math library (libm).
 
-This code uses the zlib license that allows a the free integration in common
+The code uses the zlib license that allows a the free integration in common
 compilers and professional software. The little test and benchmark program
-(or script) bench_str2num.c uses the "Civil Usage Public License" however just
-as callback_printf which is used for generating the strings in the tests.
+(or script) bench_str2num.c uses the "Civil Usage Public License" as
+callback_printf does which is required for writing the tests strings for all
+numeric bases.
 
 Once you like this little project and have a look at my time API functions
 https://github.com/klux21/limitless_times which provide truly fast, portable
