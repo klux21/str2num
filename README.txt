@@ -71,7 +71,7 @@ supported as well. There are
 long double str2ld_r (const char * psrc, char ** pend, int base, int * perr);
 double      str2d_r  (const char * psrc, char ** pend, int base, int * perr);
 
-and some wrappers of strtof, strtod and strtold which are using those
+and some wrappers for strtof, strtod and strtold which are calling those
 
 long double str2ld (const char * psrc, char ** pend);
 double      str2d  (const char * psrc, char ** pend);
