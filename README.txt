@@ -77,9 +77,9 @@ long double str2ld (const char * psrc, char ** pend);
 double      str2d  (const char * psrc, char ** pend);
 float       str2f  (const char * psrc, char ** pend);
 
-The mantissa of dual and hexadecimal numbers must be prefixed with 0b or 0x
-for an automatic recognition of the base where you can't specify the base as
-an argument. str2d_r and str2ld_r are doing an automatic base recognition if
+The mantissa of dual and hexadecimal numbers must be prefixed with 0b, 0o or
+0x for an automatic recognition of the base where you can't specify the base
+as an argument. str2d_r and str2ld_r are doing an automatic base recognition if
 the base is set to 0. All functions expect a period as the decimal separator.
 
 Because of the generic calculations the mantissa of the returned numbers may
