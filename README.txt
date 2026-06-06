@@ -4,6 +4,18 @@ strtol, strtoul, strtoll and strtoull like functions.
 The implementation doesn't use any integer divisions and for this it is much
 faster than the common implementation of several compilers that I have tested
 until now, including gcc, clang and Visual Studio on several plattforms.
+
+This functions don't care about the locale because they are intended to work
+utmost predictable. To use them you need only to add str2num.c to your project
+and include str2num.h whereever you need the functions.
+That's why there is no Makefile nor any buildsystem because it would be
+nothing good for but builds with possibly wrong compiler setting.
+
+There exist a Microsoft Visual C++ 2010 project for the testing of course
+that works with all newer Visiual C++ versions as well.
+Of course, the implementation of strtoull in Visual C++ 2010 had some minor
+bugs which got resolved in later versions and may trigger some warnings.
+
 The interface currently provides the following most important functions
 
 
@@ -97,12 +109,6 @@ numeric bases.
 Once you like this little project and have a look at my time API functions
 https://github.com/klux21/limitless_times which provide truly fast, portable
 and an easy to use time and timezone handling functions and the portable
-sprintf wrappers at https://github.com/klux21/callback_printf too. Once you
-have ever dealt with multiple platforms then you should know the advantages of
-a solid base that you can count on. It's the mass of little problems that steal
-your time and drain power and rarely the big tasks that seem just a trivial
-thing to be done until the problems that bunch of forgotten details start.
-
-Kind regards,
-
-Klaus Lux
+sprintf wrappers at https://github.com/klux21/callback_printf too.
+Once you have ever dealt with multiple platforms then you should know the
+advantages of a solid base that you can count on everywhere.
