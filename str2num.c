@@ -278,15 +278,15 @@ long double str2ld_r(const char * psrc, char ** pend, int base, int * perr)
          }
       }
    }/* if(base < 2) */
-   else
+   else if (*ps == '0')
    {
       /* Care about base specifications in hex data even if base is given.
          (It's a rather dirty thing within the specification of strtoul.) */
-      if((base == 16) && (*ps == '0') && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t) ps[2]] < 16))
+      if ((base == 16) && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t)ps[2]] < 16))
          ps += 2;
-      else if((base == 2) && (*ps == '0') && ((ps[1] == 'b') || (ps[1] == 'B')) && (digit_value[(uint8_t) ps[2]] < 2))
+      else if ((base == 2) && ((ps[1] == 'b') || (ps[1] == 'B')) && (digit_value[(uint8_t)ps[2]] < 2))
          ps += 2;
-      else if((base == 8) && (*ps == '0') && ((ps[1] == 'o') || (ps[1] == 'O')) && (digit_value[(uint8_t) ps[2]] < 8))
+      else if ((base == 8) && ((ps[1] == 'o') || (ps[1] == 'O')) && (digit_value[(uint8_t)ps[2]] < 8))
          ps += 2;
    }
 
@@ -579,15 +579,15 @@ double str2d_r(const char * psrc, char ** pend, int base, int * perr)
          }
       }
    }/* if(base < 2) */
-   else
+   else if(*ps == '0')
    {
       /* Care about base specifications in hex data even if base is given.
          (It's a rather dirty thing within the specification of strtoul.) */
-      if((base == 16) && (*ps == '0') && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t) ps[2]] < 16))
+      if((base == 16) && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t) ps[2]] < 16))
          ps += 2;
-      else if((base == 2) && (*ps == '0') && ((ps[1] == 'b') || (ps[1] == 'B')) && (digit_value[(uint8_t) ps[2]] < 2))
+      else if((base == 2) && ((ps[1] == 'b') || (ps[1] == 'B')) && (digit_value[(uint8_t) ps[2]] < 2))
          ps += 2;
-      else if((base == 8) && (*ps == '0') && ((ps[1] == 'o') || (ps[1] == 'O')) && (digit_value[(uint8_t) ps[2]] < 8))
+      else if((base == 8) && ((ps[1] == 'o') || (ps[1] == 'O')) && (digit_value[(uint8_t) ps[2]] < 8))
          ps += 2;
    }
 
