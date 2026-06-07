@@ -94,7 +94,7 @@ The mantissa of dual and hexadecimal numbers must be prefixed with 0b, 0o or
 as an argument. str2d_r and str2ld_r are doing an automatic base recognition if
 the base is set to 0. All functions expect a period as the decimal separator.
 
-Because of the generic calculations the mantissa of the returned numbers may
+Because of the generic calculations the mantissa the returned numbers may
 slightly deviate in the least significant digits from the one the exact value
 if the numeric base of the value is not a power of 2. Denormalized numbers as
 well as infinity and NaN are supported according to the C standard.
