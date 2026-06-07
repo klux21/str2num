@@ -182,6 +182,31 @@ static double powi (uint8_t base, uint32_t expo)
 
 long double str2ld_r(const char * psrc, char ** pend, int base, int * perr)
 {
+#if S2N_USE_POW10_ARRAY
+   static const long double pow10a[] = { 1e-99L, 1e-98L, 1e-97L, 1e-96L, 1e-95L, 1e-94L, 1e-93L, 1e-92L, 1e-91L, 1e-90L,
+                                         1e-89L, 1e-88L, 1e-87L, 1e-86L, 1e-85L, 1e-84L, 1e-83L, 1e-82L, 1e-81L, 1e-80L,
+                                         1e-79L, 1e-78L, 1e-77L, 1e-76L, 1e-75L, 1e-74L, 1e-73L, 1e-72L, 1e-71L, 1e-70L,
+                                         1e-69L, 1e-68L, 1e-67L, 1e-66L, 1e-65L, 1e-64L, 1e-63L, 1e-62L, 1e-61L, 1e-60L,
+                                         1e-59L, 1e-58L, 1e-57L, 1e-56L, 1e-55L, 1e-54L, 1e-53L, 1e-52L, 1e-51L, 1e-50L,
+                                         1e-49L, 1e-48L, 1e-47L, 1e-46L, 1e-45L, 1e-44L, 1e-43L, 1e-42L, 1e-41L, 1e-40L,
+                                         1e-39L, 1e-38L, 1e-37L, 1e-36L, 1e-35L, 1e-34L, 1e-33L, 1e-32L, 1e-31L, 1e-30L,
+                                         1e-29L, 1e-28L, 1e-27L, 1e-26L, 1e-25L, 1e-24L, 1e-23L, 1e-22L, 1e-21L, 1e-20L,
+                                         1e-19L, 1e-18L, 1e-17L, 1e-16L, 1e-15L, 1e-14L, 1e-13L, 1e-12L, 1e-11L, 1e-10L,
+                                         1e-09L, 1e-08L, 1e-07L, 1e-06L, 1e-05L, 1e-04L, 1e-03L, 1e-02L, 1e-01L,
+                                          1e00L,  1e01L,  1e02L,  1e03L,  1e04L,  1e05L,  1e06L,  1e07L,  1e08L,  1e09L,
+                                          1e10L,  1e11L,  1e12L,  1e13L,  1e14L,  1e15L,  1e16L,  1e17L,  1e18L,  1e19L,
+                                          1e20L,  1e21L,  1e22L,  1e23L,  1e24L,  1e25L,  1e26L,  1e27L,  1e28L,  1e29L,
+                                          1e30L,  1e31L,  1e32L,  1e33L,  1e34L,  1e35L,  1e36L,  1e37L,  1e38L,  1e39L,
+                                          1e40L,  1e41L,  1e42L,  1e43L,  1e44L,  1e45L,  1e46L,  1e47L,  1e48L,  1e49L,
+                                          1e50L,  1e51L,  1e52L,  1e53L,  1e54L,  1e55L,  1e56L,  1e57L,  1e58L,  1e59L,
+                                          1e60L,  1e61L,  1e62L,  1e63L,  1e64L,  1e65L,  1e66L,  1e67L,  1e68L,  1e69L,
+                                          1e70L,  1e71L,  1e72L,  1e73L,  1e74L,  1e75L,  1e76L,  1e77L,  1e78L,  1e79L,
+                                          1e80L,  1e81L,  1e82L,  1e83L,  1e84L,  1e85L,  1e86L,  1e87L,  1e88L,  1e89L,
+                                          1e90L,  1e91L,  1e92L,  1e93L,  1e94L,  1e95L,  1e96L,  1e97L,  1e98L,  1e99L };
+
+   static const long double * pow10 = pow10a + 99;
+#endif
+
    long double  dret  = 0.0;
    int          err   = EINVAL;
    const char * ps    = psrc;
@@ -282,11 +307,11 @@ long double str2ld_r(const char * psrc, char ** pend, int base, int * perr)
    {
       /* Care about base specifications in hex data even if base is given.
          (It's a rather dirty thing within the specification of strtoul.) */
-      if ((base == 16) && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t)ps[2]] < 16))
+      if ((base == 16) && ((ps[1] == 'x') || (ps[1] == 'X')) && (digit_value[(uint8_t) ps[2]] < 16))
          ps += 2;
-      else if ((base == 2) && ((ps[1] == 'b') || (ps[1] == 'B')) && (digit_value[(uint8_t)ps[2]] < 2))
+      else if ((base == 2) && ((ps[1] == 'b') || (ps[1] == 'B')) && (digit_value[(uint8_t) ps[2]] < 2))
          ps += 2;
-      else if ((base == 8) && ((ps[1] == 'o') || (ps[1] == 'O')) && (digit_value[(uint8_t)ps[2]] < 8))
+      else if ((base == 8) && ((ps[1] == 'o') || (ps[1] == 'O')) && (digit_value[(uint8_t) ps[2]] < 8))
          ps += 2;
    }
 
@@ -424,6 +449,13 @@ long double str2ld_r(const char * psrc, char ** pend, int base, int * perr)
 
    e += c;
 
+#if S2N_USE_POW10_ARRAY
+   if ((base == 10) && (e < 100) && (e > -100))
+   {
+      dret = ((long double) m1 * 0x400000000000000ll + m0) * pow10[e];
+   }
+   else
+#endif
    if(e >= 0)
    {
       dret = ((long double) m1 * 0x400000000000000ll + m0) * powil(base, e);
@@ -484,6 +516,31 @@ long double str2ld(const char * psrc, char ** pend)
 
 double str2d_r(const char * psrc, char ** pend, int base, int * perr)
 {
+#if S2N_USE_POW10_ARRAY
+   static const double pow10a[] = { 1e-99, 1e-98, 1e-97, 1e-96, 1e-95, 1e-94, 1e-93, 1e-92, 1e-91, 1e-90,
+                                    1e-89, 1e-88, 1e-87, 1e-86, 1e-85, 1e-84, 1e-83, 1e-82, 1e-81, 1e-80,
+                                    1e-79, 1e-78, 1e-77, 1e-76, 1e-75, 1e-74, 1e-73, 1e-72, 1e-71, 1e-70,
+                                    1e-69, 1e-68, 1e-67, 1e-66, 1e-65, 1e-64, 1e-63, 1e-62, 1e-61, 1e-60,
+                                    1e-59, 1e-58, 1e-57, 1e-56, 1e-55, 1e-54, 1e-53, 1e-52, 1e-51, 1e-50,
+                                    1e-49, 1e-48, 1e-47, 1e-46, 1e-45, 1e-44, 1e-43, 1e-42, 1e-41, 1e-40,
+                                    1e-39, 1e-38, 1e-37, 1e-36, 1e-35, 1e-34, 1e-33, 1e-32, 1e-31, 1e-30,
+                                    1e-29, 1e-28, 1e-27, 1e-26, 1e-25, 1e-24, 1e-23, 1e-22, 1e-21, 1e-20,
+                                    1e-19, 1e-18, 1e-17, 1e-16, 1e-15, 1e-14, 1e-13, 1e-12, 1e-11, 1e-10,
+                                    1e-09, 1e-08, 1e-07, 1e-06, 1e-05, 1e-04, 1e-03, 1e-02, 1e-01,
+                                     1e00,  1e01,  1e02,  1e03,  1e04,  1e05,  1e06,  1e07,  1e08,  1e09,
+                                     1e10,  1e11,  1e12,  1e13,  1e14,  1e15,  1e16,  1e17,  1e18,  1e19,
+                                     1e20,  1e21,  1e22,  1e23,  1e24,  1e25,  1e26,  1e27,  1e28,  1e29,
+                                     1e30,  1e31,  1e32,  1e33,  1e34,  1e35,  1e36,  1e37,  1e38,  1e39,
+                                     1e40,  1e41,  1e42,  1e43,  1e44,  1e45,  1e46,  1e47,  1e48,  1e49,
+                                     1e50,  1e51,  1e52,  1e53,  1e54,  1e55,  1e56,  1e57,  1e58,  1e59,
+                                     1e60,  1e61,  1e62,  1e63,  1e64,  1e65,  1e66,  1e67,  1e68,  1e69,
+                                     1e70,  1e71,  1e72,  1e73,  1e74,  1e75,  1e76,  1e77,  1e78,  1e79,
+                                     1e80,  1e81,  1e82,  1e83,  1e84,  1e85,  1e86,  1e87,  1e88,  1e89,
+                                     1e90,  1e91,  1e92,  1e93,  1e94,  1e95,  1e96,  1e97,  1e98,  1e99 };
+
+   static const double * pow10 = pow10a + 99;
+#endif
+
    double       dret  = 0.0;
    int          err   = EINVAL;
    const char * ps    = psrc;
@@ -719,6 +776,13 @@ double str2d_r(const char * psrc, char ** pend, int base, int * perr)
 
    e += c;
 
+#if S2N_USE_POW10_ARRAY
+   if ((base == 10) && (e < 100) && (e > -100))
+   {
+      dret = (double) m * pow10[e];
+   }
+   else
+#endif
    if(e >= 0)
    {
       dret = (double) m * powi(base, e);

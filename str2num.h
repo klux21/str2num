@@ -43,13 +43,23 @@
 #include <stdint.h>
 
 #ifndef S2N_UMIN_IS_SMIN
-/* S2N_UMIN_IS_SMIN is nonzero then the minumum negative value that is accepted for
+/* If S2N_UMIN_IS_SMIN is nonzero then the minumum negative value that is accepted for
    unsigned values equals the minimum value of signed values to ensure a valid sign bit
-   to be kept. It very hard for applications to recognize a value as a negative one if
+   to be kept. It's very hard for applications to recognize a value as a negative one if
    the sign bit is lost and it's even more hard to deal with errors because of that.
    However the recent Unix standard specifies the functions that way and common compilers
-   do implement stroul that way ... :o( */
+   do implement stroul that way so the default here is 0 ... :o( */
+
 #define S2N_UMIN_IS_SMIN 0
+#endif
+
+#ifndef S2N_USE_POW10_ARRAY
+/* If S2N_USE_POW10_ARRAY is nonzero then precalculated arrays of powers of 10 are used
+   for speeding up the reading of most common decimal numbers in the range 10^-99 - 10^99.
+   However this requires about 5kB of static memory and can be disabled if the performance
+   of  decimal floating point numbers in that range doesn't count. */
+
+#define S2N_USE_POW10_ARRAY 1
 #endif
 
 #ifdef __cplusplus
