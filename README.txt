@@ -1,13 +1,13 @@
-str2num provides very fast, portable and full featured wrappers for
+This project provides very fast, portable and full featured wrappers for
 strtol, strtoul, strtoll and strtoull like functions.
 
 The implementation doesn't use any integer divisions and for this it is much
 faster than the common implementation of several compilers that I have tested
 until now, including gcc, clang and Visual Studio on several plattforms.
 
-This functions don't care about the locale because they are intended to work
+All functions don't care about the locale because they are intended to work
 utmost predictable. To use them you need only to add str2num.c to your project
-and include str2num.h whereever you need the functions.
+and include str2num.h whereever you require the functions.
 That's why there is no Makefile nor any buildsystem because it would be
 nothing good for but builds with possibly wrong compiler setting.
 
@@ -95,9 +95,9 @@ as an argument. str2d_r and str2ld_r are doing an automatic base recognition if
 the base is set to 0. All functions expect a period as the decimal separator.
 
 Because of the generic calculations the mantissa the returned numbers may
-slightly deviate in the least significant digits from the one the exact value
-if the numeric base of the value is not a power of 2. Denormalized numbers as
-well as infinity and NaN are supported according to the C standard.
+slightly deviate in the least significant digits from the exact value if the
+numeric base of the value is not a power of 2. Denormalized numbers as well as
+infinity (INF) and NaN are supported according to the C standard.
 The code doesn't require the linkage of the math library (libm).
 
 The code uses the zlib license that allows a the free integration in common
