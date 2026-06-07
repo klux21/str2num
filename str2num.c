@@ -428,6 +428,10 @@ long double str2ld_r(const char * psrc, char ** pend, int base, int * perr)
    {
       dret = ((long double) m1 * 0x400000000000000ll + m0) * powil(base, e);
    }
+   else if(e >= -192)
+   {
+      dret = ((long double) m1 * 0x400000000000000ll + m0) / powil(base, -e);
+   }
    else
    {  /* Try to prevent a possible overflow within powil */
       long double p;
