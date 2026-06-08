@@ -322,30 +322,52 @@ long double str2ld_r(const char * psrc, char ** pend, int base, int * perr)
    }
 
    while (*ps == '0')
-     ++ps; /* skip leading zeros */
+      ++ps; /* skip leading zeros */
 
    d = digit_value[(uint8_t) *ps];
-   while(d < base)
+   if(d < base)
    {
-      if (m1 < 0x400000000000000ll)
-      {
+      m0 = d;
+      d  = digit_value[(uint8_t) *(++ps)];
+
+      while((d < base) && (m0 < 0x20000000000000ll))
+      { /* m0 won't yet overflow */
          m0 *= base;
-         m1 *= base;
          m0 += d;
-         m1 += m0 >> 58;
-         m0 &= 0x3ffffffffffffffll;
-      }
-      else
-      {
-         ++c;
+         d = digit_value[(uint8_t) *(++ps)];
       }
 
-      d = digit_value[(uint8_t) *(++ps)];
+      while(d < base)
+      {
+         if (m1 < 0x400000000000000ll)
+         {
+            m0 *= base;
+            m1 *= base;
+            m0 += d;
+            m1 += m0 >> 58;
+            m0 &= 0x3ffffffffffffffll;
+         }
+         else
+         {
+            ++c;
+         }
+
+         d = digit_value[(uint8_t) *(++ps)];
+      }
    }
 
    if(*ps == '.')
    {
       d = digit_value[(uint8_t) *(++ps)];
+
+      while((d < base) && (m0 < 0x20000000000000ll))
+      { /* m0 won't yet overflow */
+         m0 *= base;
+         m0 += d;
+         d = digit_value[(uint8_t) *(++ps)];
+         --c;
+      }
+
       while(d < base)
       {
          if (m1 < 0x400000000000000ll)
@@ -658,24 +680,31 @@ double str2d_r(const char * psrc, char ** pend, int base, int * perr)
      ++ps; /* skip leading zeros */
 
    d = digit_value[(uint8_t) *ps];
-   while(d < base)
+   if(d < base)
    {
-      if (m < 0x400000000000000ll)
-      {
-         m *= base;
-         m += d;
-      }
-      else
-      {
-         ++c;
-      }
-
+      m = d;
       d = digit_value[(uint8_t) *(++ps)];
+
+      while(d < base)
+      {
+         if (m < 0x400000000000000ll)
+         {
+            m *= base;
+            m += d;
+         }
+         else
+         {
+            ++c;
+         }
+
+         d = digit_value[(uint8_t) *(++ps)];
+      }
    }
 
    if(*ps == '.')
    {
       d = digit_value[(uint8_t) *(++ps)];
+
       while(d < base)
       {
          if (m < 0x400000000000000ll)
