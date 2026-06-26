@@ -43,7 +43,7 @@
 #include <stdint.h>
 
 #ifndef S2N_UMIN_IS_SMIN
-/* If S2N_UMIN_IS_SMIN is nonzero then the minumum negative value that is accepted for
+/* If S2N_UMIN_IS_SMIN is nonzero then the minimum negative value that is accepted for
    unsigned values equals the minimum value of signed values to ensure a valid sign bit
    to be kept. It's very hard for applications to recognize a value as a negative one if
    the sign bit is lost and it's even more hard to deal with errors because of that.
@@ -71,8 +71,8 @@ extern const uint8_t digit_value[256];
 
 /* The functions are full featured wrappers for strtol or strtoul like functions. 
    All functions return the minimum or maximum value of the integer type in case of overflows.  
-   The r_* variants are reentrant save and return errors in *perr instead in errno.
-   All functions support the prefixes 0b for dual values, 0o for octal numbers and 0x for hexadecimal values.
+   The r_* variants are reentrant safe and return errors in *perr instead in errno.
+   All functions support the prefixes 0b for binary values, 0o for octal numbers and 0x for hexadecimal values.
    If base is set to 1 than numbers with a leading 0 are recognized as decimal values and octal values require
    the prefix 0o for being recognized as octal values.
    Octal floating point values always require the prefix 0o for an automatic detection of that base. */
