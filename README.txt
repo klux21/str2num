@@ -3,16 +3,16 @@ strtol, strtoul, strtoll and strtoull like functions.
 
 The implementation doesn't use any integer divisions and for this it is much
 faster than the common implementation of several compilers that I have tested
-until now, including gcc, clang and Visual Studio on several plattforms.
+until now, including gcc, clang and Visual Studio on several platforms.
 
 All functions don't care about the locale because they are intended to work
 utmost predictable. To use them you need only to add str2num.c to your project
-and include str2num.h whereever you require the functions.
+and include str2num.h wherever you require the functions.
 That's why there is no Makefile nor any buildsystem because it would be
 nothing good for but builds with possibly wrong compiler setting.
 
 There exist a Microsoft Visual C++ 2010 project for the testing of course
-that works with all newer Visiual C++ versions as well.
+that works with all newer Visual C++ versions as well.
 Of course, the implementation of strtoull in Visual C++ 2010 had some minor
 bugs which got resolved in later versions and may trigger some warnings.
 
@@ -50,7 +50,7 @@ unsigned long long str2ull (const char * ps, char ** pe, int base);
 All functions implement overflow handling according to the C standards and the
 several types. All function support all numeric bases between 2 and 36.
 
-All function recognize the prefixes 0b for dual numbers, 0o for octal numbers
+All function recognize the prefixes 0b for binary numbers, 0o for octal numbers
 and 0x for hexadecimal numbers if the base is set to 0 or 1.
 
 If the base is set to 1 than a different recognition of the numeric base
@@ -74,9 +74,9 @@ a template as well.
 
 There are a bunch of functions for reading floating point numbers of different
 numeric bases from a string in the format that callback_printf uses where the
-exponent of numeric bases higher than 15 starts after a preceeding tilde '~'
+exponent of numeric bases higher than 15 starts after a preceding tilde '~'
 instead of an 'e' and is always of the same numeric base as the mantissa.
-The numeric format of the %a printf output where the mantisse is hexadecimal
+The numeric format of the %a printf output where the mantissa is hexadecimal
 and the exponent is for a base 2 mantissa but given decimal after a 'p' is
 supported as well. There are
 
@@ -89,7 +89,7 @@ long double str2ld (const char * psrc, char ** pend);
 double      str2d  (const char * psrc, char ** pend);
 float       str2f  (const char * psrc, char ** pend);
 
-The mantissa of dual and hexadecimal numbers must be prefixed with 0b, 0o or
+The mantissa of binary and hexadecimal numbers must be prefixed with 0b, 0o or
 0x for an automatic recognition of the base where you can't specify the base
 as an argument. str2d_r and str2ld_r are doing an automatic base recognition if
 the base is set to 0. All functions expect a period as the decimal separator.
