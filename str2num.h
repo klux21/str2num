@@ -57,7 +57,7 @@
 /* If S2N_USE_POW10_ARRAY is nonzero then precalculated arrays of powers of 10 are used
    for speeding up the reading of most common decimal numbers in the range 10^-99 - 10^99.
    However this requires about 5kB of static memory and can be disabled if the performance
-   of  decimal floating point numbers in that range doesn't count. */
+   of decimal floating point numbers in that range doesn't count. */
 
 #define S2N_USE_POW10_ARRAY 1
 #endif
